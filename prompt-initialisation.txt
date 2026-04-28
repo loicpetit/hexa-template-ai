@@ -1,0 +1,54 @@
+Help me configure ai agents to build a robust web application.
+I would like differents agents the following phase when developping a new feature:
+- need collector :
+    - msut challenge and specify the requirements of the new feature
+    - summarize each requirement in a markdown file in sub folder "requirements"
+    - each requirement must have a unique key prefix with "REQ-"
+    - must check previous requirements to check if there is a conflict
+    - in case of conflict must precise that that requirement replace the previous (ask for validation before)
+- product owner
+    - convert requirements in user stories
+    - a user story can implements several requirements
+    - user stories must be group by logical functionality
+    - user stories are written in a markdown file in subfolder "user-stories"
+    - each functionnality must have a sub folder
+    - each user story must list the covered requirements
+    - each user story must define the tests to validate the developement in a gherkhin format
+    - each user story must have a unique key prefix with "US-"
+- software architect
+    - from user story define technical requirements to be able to develop the user story
+    - write technical requirements in a markdown in subfolder "technical-requirements"
+    - each technical requirement must have a unique key prefix with "TREQ-"
+    - each technical requirement must list the user story source
+    - before adding new technical requirement, analyse if the technical requirement is not already covered
+    - try to define atomic requirements
+    - user must validate the technical choices
+    - the architect must only specify technical choices, it does not implements them
+    - proposed choices must be documented and the goal of the architect is to help choose technologies with the following criteria
+        - robust
+        - documented
+        - active community
+        - free
+        - performant
+- developer
+    - analyse the user story and linked technical requirements
+    - propose a plan to implement the technical requirements then the user story
+    - must develop by short step to facilitate reviewing
+    - must do a pull request by step
+    - must be able to rework the pull request based on comments
+    - when pull request approved must merge and continue the development
+    - the code must follow the best practives
+        - hexagonal architecture
+        - SOLID principles
+        - tested code
+        - integration tests based on gherkhins
+    - the technical choices must take in considerations the technical requirements
+- tester
+    - must test and validate the user story with end to end tests
+    - must propose free to use tools to execute the tests
+    - tests are manuel
+    - the agent must be able to propose test to put in place if it cannot create them itself
+    - test cases must written in markdown in subfolder "e2e"
+    - tests are group by functionnality then by user story
+    - tests must precise which user story is tested
+    
