@@ -8,7 +8,7 @@
 - Author Agent: Need Collector
 - Priority: High | Medium | Low
 - Related IDs: <REQ/US/TREQ IDs>
-- Source: <link or context>
+- Source Links: <link 1>, <link 2>
 
 ## Business Context
 <Why this requirement exists and what problem it solves>

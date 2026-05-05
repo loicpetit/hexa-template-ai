@@ -9,6 +9,7 @@
 - Functionality: <functionality name>
 - Covered Requirements: REQ-XXXX, REQ-YYYY
 - Related IDs: <TREQ IDs if already known>
+- Source Links: <link 1>, <link 2>
 
 ## User Story
 As a <persona>,

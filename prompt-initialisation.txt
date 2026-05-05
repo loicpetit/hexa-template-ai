@@ -18,6 +18,7 @@ Global conventions (mandatory)
     - REQ-0001 for business requirements.
     - US-0001 for user stories.
     - TREQ-0001 for technical requirements.
+    - E2E-0001 for end-to-end test cases.
 - Allowed statuses:
     - Draft
     - Proposed

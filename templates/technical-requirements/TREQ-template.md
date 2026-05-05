@@ -8,6 +8,7 @@
 - Author Agent: Software Architect
 - Source User Stories: US-XXXX
 - Related IDs: <REQ/US/TREQ IDs>
+- Source Links: <link 1>, <link 2>
 
 ## Technical Requirement Statement
 <Atomic, implementation-driving statement>

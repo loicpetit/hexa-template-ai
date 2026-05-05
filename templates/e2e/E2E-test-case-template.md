@@ -1,7 +1,7 @@
 # E2E-XXXX - <Short Test Case Title>
 
 ## Metadata
-- Test ID: E2E-XXXX
+- ID: E2E-XXXX
 - Status: Draft
 - Created: YYYY-MM-DD
 - Updated: YYYY-MM-DD
@@ -9,6 +9,8 @@
 - Functionality: <functionality>
 - Linked User Story: US-XXXX
 - Covered Scenario(s): <gherkin scenario names>
+- Related IDs: <REQ/US/TREQ IDs>
+- Source Links: <link 1>, <link 2>
 
 ## Objective
 <What this test validates>
