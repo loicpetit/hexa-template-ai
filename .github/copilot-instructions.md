@@ -46,6 +46,7 @@ Every artifact file must contain:
 
 ## Quality Rules
 - Requirements and technical requirements must be **atomic and testable**.
+- When a requirement mixes multiple concerns (for example behavior, access control, and response contract), split it into separate REQs to improve separation of concerns.
 - Any replacement must declare the replaced ID and rationale.
 - Any conflict must include impact analysis on linked artifacts.
 - No duplicate technical requirement is allowed.
