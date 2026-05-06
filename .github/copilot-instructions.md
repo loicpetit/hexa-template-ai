@@ -64,22 +64,22 @@ Every artifact file must contain:
 | Gate | Condition |
 |------|-----------|
 | **Gate 1** | All REQs **Approved** before user stories are created |
-| **Gate 2** | All US **Approved** with feature guides documented before technical requirements are created |
+| **Gate 2** | All US **Approved** before technical requirements are created |
 | **Gate 3** | All TREQ (technical choices) **Approved** before implementation starts |
-| **Gate 4** | All E2E tests **Pass** and evidence documented before feature closure |
+| **Gate 4** | All E2E tests **Pass** and feature guides documented before feature closure |
 
 ## Traceability Rules
 Update `traceability.md` at each phase. Required links:
 - `REQ → US` (Gate 2)
-- `US → Feature Guide` (Gate 2)
 - `US → TREQ` (Gate 3)
 - `US → E2E test cases` (Gate 4)
+- `US → Feature Guide` (Gate 4, after implementation and testing)
 
 Any missing link **blocks progression** to the next gate.
 
 ## Completion Criteria
 - All linked REQ, US, and TREQ artifacts are Approved.
-- All approved US have corresponding feature guides in `/docs/features/`.
 - Replacements/conflicts are approved and reflected in statuses.
 - Tests are executed and evidence is documented.
-- Traceability is complete and consistent (REQ → US → Feature Guide → TREQ → E2E).
+- Feature guides are created after implementation and testing with real-world examples and how-to guides.
+- Traceability is complete and consistent (REQ → US → TREQ → E2E → Feature Guide).

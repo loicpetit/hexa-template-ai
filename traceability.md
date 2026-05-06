@@ -17,14 +17,15 @@
 | Gate | Condition | Status |
 |------|-----------|--------|
 | Gate 1 | All REQs Approved before US creation | ✅ Completed |
-| Gate 2 | All US Approved with feature guides documented before TREQ creation | 🔄 In Progress (US Approved, feature guides pending) |
+| Gate 2 | All US Approved before TREQ creation | ✅ Completed |
 | Gate 3 | All TREQ (technical choices) Approved before implementation | ⬜ Not started |
-| Gate 4 | All E2E tests Pass before feature closure | ⬜ Not started |
+| Gate 4 | All E2E tests Pass and feature guides documented before feature closure | ⬜ Not started |
 
 ## Coverage Rules
-- Every **Approved** REQ must be linked to at least one US.
-- Every **Approved** US must be linked to a feature guide and at least one TREQ and one E2E test case.
-- Feature guides must be created for all approved functionalities and must include real-world examples and how-to guides.
+- Every **Approved** REQ must be linked to at least one US (Gate 2).
+- Every **Approved** US must be linked to at least one TREQ and one E2E test case (Gate 3 & 4).
+- Feature guides are created after implementation and testing complete (Gate 4), not before.
+- Feature guides must include real-world examples, how-to guides, and step-by-step instructions.
 - Missing links block progression to the next gate.
 
 ## Artifact Index

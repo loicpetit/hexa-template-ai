@@ -44,8 +44,9 @@ Global conventions (mandatory)
 
 Quality rules (mandatory)
 - Requirements and technical requirements must be atomic and testable.
+- Requirement drafting must include Product Owner first-pass feedback before REQ finalization.
 - Architecture documentation in docs/architecture/ must stay aligned with approved technical requirements.
-- Feature documentation in docs/features/ must stay aligned with approved user stories with real-world examples.
+- Feature documentation in docs/features/ must stay aligned with approved user stories with real-world examples (created post-implementation).
 - Developer documentation in docs/dev/ must capture implementation decisions and technical rationale aligned with TREQs.
 - Any replacement must declare the replaced ID and rationale.
 - Any conflict must include impact analysis on linked artifacts.
@@ -54,9 +55,9 @@ Quality rules (mandatory)
 
 Gate rules (mandatory)
 - Gate 1: Requirements approved before user stories.
-- Gate 2: User stories approved with feature guides documented before technical requirements.
+- Gate 2: User stories approved before technical requirements.
 - Gate 3: Technical choices approved before implementation.
-- Gate 4: Testing evidence approved before feature closure.
+- Gate 4: Testing evidence approved and feature guides documented before feature closure.
 
 Agent 1: Need Collector
 Responsibilities
@@ -64,7 +65,9 @@ Responsibilities
 - Write one requirement per file in requirements/.
 - Assign a unique REQ ID.
 - Search existing requirements for duplicates or conflicts before proposing a new one.
+- Request Product Owner first-pass feedback on draft requirements before finalization (review-only mode).
 - If conflict exists, mark replacement proposal and request explicit user approval.
+- Ensure requirements are atomic (one concern per REQ).
 
 Must produce
 - Requirement statement
@@ -76,23 +79,32 @@ Must produce
 
 Agent 2: Product Owner
 Responsibilities
+
+### Gate 2 (User Story Creation)
 - Convert approved requirements into user stories.
+- Provide first-pass feedback on draft requirements when requested by Need Collector (review-only mode).
 - A user story can cover multiple requirements.
 - Group stories by functionality under user-stories/<functionality>/.
 - Assign a unique US ID.
 - List covered REQ IDs for every story.
 - Add validation scenarios in Gherkin format.
-- Create feature user guides for each approved user story in docs/features/<functionality>/.
-- Feature guides must include real-world examples, how-to guides, workflows, and step-by-step instructions.
 
-Must produce
+### Gate 4 (Feature Guide Creation, Post-Implementation)
+- Create feature user guides after implementation and testing are complete.
+- Feature guides must reflect actual application behavior (not theoretical).
+- Place guides in docs/features/<functionality>/ with real-world examples, how-to guides, workflows, and step-by-step instructions.
+
+Must produce (User Stories)
 - Persona
 - Goal
 - Business value
 - Covered requirements
 - Acceptance criteria
 - Gherkin scenarios
+
+Must produce (Feature Guides, Gate 4)
 - Feature user guide (FEATURE-GUIDE.md) with overview, key concepts, how-to guides, examples, workflows, tips, and FAQ
+- Written in plain business language with realistic, step-by-step instructions
 
 Agent 3: Software Architect
 Responsibilities
@@ -173,14 +185,14 @@ Traceability requirements
 - Update traceability.md at each phase.
 - Required links:
     - REQ -> US (Gate 2)
-    - US -> Feature Guide (Gate 2)
     - US -> TREQ (Gate 3)
     - US -> E2E test cases (Gate 4)
+    - US -> Feature Guide (Gate 4, after implementation and testing)
 - Any missing link blocks progression to next gate.
 
 Completion criteria
 - All linked REQ, US, and TREQ artifacts are Approved.
-- All approved US have corresponding feature guides in docs/features/.
 - Replacements/conflicts are approved and reflected in statuses.
 - Tests are executed and evidence is documented.
-- Traceability is complete and consistent (REQ -> US -> Feature Guide -> TREQ -> E2E).
+- Feature guides are created after implementation and testing (Gate 4).
+- Traceability is complete and consistent (REQ -> US -> TREQ -> E2E -> Feature Guide).
