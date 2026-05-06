@@ -5,11 +5,11 @@
 
 ## Matrix
 
-| REQ ID | Title | Status | US ID(s) | TREQ ID(s) | E2E ID(s) |
-|--------|-------|--------|----------|------------|-----------|
-| REQ-0001 | Email Records CRUD Lifecycle | Approved | — | — | — |
-| REQ-0002 | Authenticated Email Access and Audit Attribution | Approved | — | — | — |
-| REQ-0003 | Email JSON Response Contract | Approved | — | — | — |
+| REQ ID | Title | Status | US ID(s) | Feature Guide | TREQ ID(s) | E2E ID(s) |
+|--------|-------|--------|----------|----------------|------------|-----------|
+| REQ-0001 | Email Records CRUD Lifecycle | Approved | — | — | — | — |
+| REQ-0002 | Authenticated Email Access and Audit Attribution | Approved | — | — | — | — |
+| REQ-0003 | Email JSON Response Contract | Approved | — | — | — | — |
 
 ## Gate Status
 
@@ -22,7 +22,8 @@
 
 ## Coverage Rules
 - Every **Approved** REQ must be linked to at least one US.
-- Every **Approved** US must be linked to at least one TREQ and one E2E test case.
+- Every **Approved** US must be linked to a feature guide and at least one TREQ and one E2E test case.
+- Feature guides must be created for all approved functionalities and must include real-world examples and how-to guides.
 - Missing links block progression to the next gate.
 
 ## Artifact Index
@@ -32,7 +33,10 @@
 - REQ-0002 - Authenticated Email Access and Audit Attribution
 - REQ-0003 - Email JSON Response Contract
 
-### User Stories (`user-stories/`)
+### User St
+
+### Feature Guides (`docs/features/`)
+_None yet._ories (`user-stories/`)
 _None yet._
 
 ### Technical Requirements (`technical-requirements/`)
