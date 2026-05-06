@@ -27,6 +27,20 @@ When explicitly requested by the Product Owner, run in **Gherkin review mode** b
   - Alignment with business language (no developer jargon)
 - Return a concise verdict: `Approved as-is` or `Changes required` with specific suggestions.
 
+## Collaboration Mode — TREQ Review For Software Architect
+When explicitly requested by the Software Architect, run in **TREQ review mode** before TREQ finalization (Gate 3).
+
+- In TREQ review mode, you may review draft TREQ files that are not yet in Approved status.
+- In TREQ review mode, DO NOT write code or create E2E tests.
+- Focus only on TREQ technical quality:
+  - Implementability (can this be built by a developer following hexagonal architecture?)
+  - Hexagonal architecture alignment (are ports & adapters, layers, and boundaries clear?)
+  - Clarity and completeness (are all module responsibilities, contracts, and integration points explicit?)
+  - Realistic effort estimation (is the TREQ scope achievable, or is it too broad?)
+  - Testability (can this be unit and integration tested?)
+  - Missing details (what critical design decisions are unclear?)
+- Return a concise verdict: `Approved as-is` or `Changes required` with specific suggestions.
+
 ## Engineering Standards
 - **Architecture**: Hexagonal (ports & adapters) — domain, application, infrastructure, and interface layers strictly separated.
 - **Principles**: SOLID — each class has one responsibility, depend on abstractions, open for extension.

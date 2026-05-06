@@ -85,6 +85,13 @@ When agents are updated with new feedback/review responsibilities, ensure the pa
   - `prompt-initialisation.txt` — lists both agents' feedback responsibilities
   - `readme.md` — shows Developer role includes Gherkin validation (Gate 2)
 
+- **Software Architect → Developer Review** (before TREQ finalization):
+  - `.github/agents/software-architect.agent.md` — includes Developer TREQ feedback step (step 10)
+  - `.github/agents/developer.agent.md` — has review-only TREQ review mode for implementability
+  - `.github/copilot-instructions.md` — mentions TREQ feedback in Execution Model and Quality Rules
+  - `prompt-initialisation.txt` — lists both agents' feedback responsibilities
+  - `readme.md` — shows Developer role includes TREQ validation (Gate 3)
+
 ---
 
 **Last Updated:** 2026-05-06  

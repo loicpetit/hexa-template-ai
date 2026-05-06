@@ -46,6 +46,7 @@ Quality rules (mandatory)
 - Requirements and technical requirements must be atomic and testable.
 - Requirement drafting must include Product Owner first-pass feedback before REQ finalization.
 - User story Gherkin scenarios must be reviewed by Developer for testability before US finalization.
+- Technical requirements must be reviewed by Developer for implementability and clarity before TREQ finalization.
 - Architecture documentation in docs/architecture/ must stay aligned with approved technical requirements.
 - Feature documentation in docs/features/ must stay aligned with approved user stories with real-world examples (created post-implementation).
 - Developer documentation in docs/dev/ must capture implementation decisions and technical rationale aligned with TREQs.
@@ -119,6 +120,7 @@ Responsibilities
 - Analyze existing technical requirements and avoid overlap.
 - Propose technical choices only (no implementation).
 - Request user validation for technical choices.
+- Request Developer implementability feedback on draft TREQs before finalization (review-only mode).
 - Use graphics when possible (prefer Mermaid diagrams).
 
 Technology selection criteria
@@ -142,6 +144,7 @@ Agent 4: Developer
 Responsibilities
 - Analyze approved US and linked TREQ artifacts.
 - Provide Gherkin scenario feedback when requested by Product Owner (review-only mode, no implementation).
+- Provide TREQ implementability feedback when requested by Software Architect (review-only mode, no code writing).
 - Ask clarification questions if any US or linked TREQ is incomplete, ambiguous, or conflicting.
 - Propose an implementation plan by coherent, reviewable increments.
 - Implement technical requirements to prepare and deliver user story implementation.
