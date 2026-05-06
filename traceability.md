@@ -1,23 +1,23 @@
 # Traceability Matrix
 
 > Last updated: 2026-05-06  
-> Status: Active — 4 Approved requirements.
+> Status: Active — 4 Approved requirements, 4 Approved user stories.
 
 ## Matrix
 
 | REQ ID | Title | Status | US ID(s) | Feature Guide | TREQ ID(s) | E2E ID(s) |
 |--------|-------|--------|----------|----------------|------------|-----------|
-| REQ-0001 | Email Records CRUD Lifecycle | Approved | — | — | — | — |
-| REQ-0002 | Authenticated Email Access | Approved | — | — | — | — |
-| REQ-0003 | Email Record Response Fields Contract | Approved | — | — | — | — |
-| REQ-0004 | Email Record Audit Attribution | Approved | — | — | — | — |
+| REQ-0001 | Email Records CRUD Lifecycle | Approved | US-0001, US-0002, US-0003, US-0004 | — | — | — |
+| REQ-0002 | Authenticated Email Access | Approved | US-0001, US-0002, US-0003, US-0004 | — | — | — |
+| REQ-0003 | Email Record Response Fields Contract | Approved | US-0001, US-0002, US-0003 | — | — | — |
+| REQ-0004 | Email Record Audit Attribution | Approved | US-0001, US-0003 | — | — | — |
 
 ## Gate Status
 
 | Gate | Condition | Status |
 |------|-----------|--------|
 | Gate 1 | All REQs Approved before US creation | ✅ Completed |
-| Gate 2 | All US Approved with feature guides documented before TREQ creation | ⬜ Not started |
+| Gate 2 | All US Approved with feature guides documented before TREQ creation | 🔄 In Progress (US Approved, feature guides pending) |
 | Gate 3 | All TREQ (technical choices) Approved before implementation | ⬜ Not started |
 | Gate 4 | All E2E tests Pass before feature closure | ⬜ Not started |
 
@@ -36,7 +36,10 @@
 - REQ-0004 - Email Record Audit Attribution
 
 ### User Stories (`user-stories/`)
-_None yet._
+- US-0001 - Create Email Record
+- US-0002 - Read Email Records
+- US-0003 - Update Email Record
+- US-0004 - Hard-Delete Email Record
 
 ### Feature Guides (`docs/features/`)
 _None yet._

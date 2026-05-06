@@ -35,3 +35,4 @@ The system shall return, for create, read, update, and list operations, email re
 
 ## Notes
 This requirement defines required returned fields only and is implementation-format neutral.
+Product Owner first-pass feedback: Changes required (remove format-specific wording and keep field contract only), applied on 2026-05-06.
