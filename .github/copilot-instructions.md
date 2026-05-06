@@ -7,6 +7,7 @@ Deliver robust web application features with full traceability from business nee
 - The workflow is **sequential and gated**.
 - A next phase cannot start until the previous gate is **explicitly approved by the user**.
 - All artifacts are markdown files stored in the repository.
+- Before finalizing any REQ artifact, Need Collector must request a first-pass quality review from Product Owner (review-only, no US creation).
 
 ## Folder Structure
 ```
@@ -49,6 +50,7 @@ Every artifact file must contain:
 
 ## Quality Rules
 - Requirements and technical requirements must be **atomic and testable**.
+- Requirement drafting workflow must include Product Owner first-pass feedback before REQ finalization.
 - Architecture documentation in `docs/architecture/` must stay aligned with approved technical requirements.
 - Feature documentation in `docs/features/` must stay aligned with approved user stories and include real-world examples and how-to guides in plain business language.
 - Developer documentation in `docs/dev/` must capture implementation decisions and technical rationale aligned with approved TREQs.
