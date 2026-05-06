@@ -8,11 +8,13 @@ Execution model
 
 Global conventions (mandatory)
 - Folder structure:
-    - requirements/
-    - user-stories/
-    - technical-requirements/
     - docs/architecture/
+    - docs/dev/
+    - docs/features/
     - e2e/
+    - requirements/
+    - technical-requirements/
+    - user-stories/
 - Root files:
     - traceability.md
 - ID formats:
@@ -42,6 +44,9 @@ Global conventions (mandatory)
 
 Quality rules (mandatory)
 - Requirements and technical requirements must be atomic and testable.
+- Architecture documentation in docs/architecture/ must stay aligned with approved technical requirements.
+- Feature documentation in docs/features/ must stay aligned with approved user stories with real-world examples.
+- Developer documentation in docs/dev/ must capture implementation decisions and technical rationale aligned with TREQs.
 - Any replacement must declare the replaced ID and rationale.
 - Any conflict must include impact analysis on linked artifacts.
 - No duplicate technical requirement is allowed.
@@ -49,7 +54,7 @@ Quality rules (mandatory)
 
 Gate rules (mandatory)
 - Gate 1: Requirements approved before user stories.
-- Gate 2: User stories approved before technical requirements.
+- Gate 2: User stories approved with feature guides documented before technical requirements.
 - Gate 3: Technical choices approved before implementation.
 - Gate 4: Testing evidence approved before feature closure.
 
@@ -77,6 +82,8 @@ Responsibilities
 - Assign a unique US ID.
 - List covered REQ IDs for every story.
 - Add validation scenarios in Gherkin format.
+- Create feature user guides for each approved user story in docs/features/<functionality>/.
+- Feature guides must include real-world examples, how-to guides, workflows, and step-by-step instructions.
 
 Must produce
 - Persona
@@ -85,6 +92,7 @@ Must produce
 - Covered requirements
 - Acceptance criteria
 - Gherkin scenarios
+- Feature user guide (FEATURE-GUIDE.md) with overview, key concepts, how-to guides, examples, workflows, tips, and FAQ
 
 Agent 3: Software Architect
 Responsibilities
@@ -164,13 +172,15 @@ Must produce
 Traceability requirements
 - Update traceability.md at each phase.
 - Required links:
-    - REQ -> US
-    - US -> TREQ
-    - US -> E2E test cases
+    - REQ -> US (Gate 2)
+    - US -> Feature Guide (Gate 2)
+    - US -> TREQ (Gate 3)
+    - US -> E2E test cases (Gate 4)
 - Any missing link blocks progression to next gate.
 
 Completion criteria
 - All linked REQ, US, and TREQ artifacts are Approved.
+- All approved US have corresponding feature guides in docs/features/.
 - Replacements/conflicts are approved and reflected in statuses.
 - Tests are executed and evidence is documented.
-- Traceability is complete and consistent.
+- Traceability is complete and consistent (REQ -> US -> Feature Guide -> TREQ -> E2E).

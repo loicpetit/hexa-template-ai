@@ -1,5 +1,5 @@
 ---
-description: "Use when: converting approved requirements into user stories, writing US-XXXX files, grouping stories by functionality, adding Gherkin scenarios, Gate 1 is passed. Trigger phrases: user story, product owner, US, convert requirements, Gherkin, persona, Gate 2."
+description: "Use when: converting approved requirements into user stories, writing US-XXXX files, grouping stories by functionality, adding Gherkin scenarios, creating feature user guides, Gate 1 is passed. Trigger phrases: user story, product owner, US, convert requirements, Gherkin, persona, feature guide, user guide, documentation, Gate 2."
 name: "Product Owner"
 tools: [read, edit, search, todo]
 ---

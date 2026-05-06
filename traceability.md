@@ -16,7 +16,7 @@
 | Gate | Condition | Status |
 |------|-----------|--------|
 | Gate 1 | All REQs Approved before US creation | ✅ Completed |
-| Gate 2 | All US Approved before TREQ creation | ⬜ Not started |
+| Gate 2 | All US Approved with feature guides documented before TREQ creation | ⬜ Not started |
 | Gate 3 | All TREQ (technical choices) Approved before implementation | ⬜ Not started |
 | Gate 4 | All E2E tests Pass before feature closure | ⬜ Not started |
 
@@ -33,10 +33,10 @@
 - REQ-0002 - Authenticated Email Access and Audit Attribution
 - REQ-0003 - Email JSON Response Contract
 
-### User St
+### User Stories (`user-stories/`)
+_None yet._
 
 ### Feature Guides (`docs/features/`)
-_None yet._ories (`user-stories/`)
 _None yet._
 
 ### Technical Requirements (`technical-requirements/`)
