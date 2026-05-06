@@ -11,6 +11,7 @@ Global conventions (mandatory)
     - requirements/
     - user-stories/
     - technical-requirements/
+    - docs/architecture/
     - e2e/
 - Root files:
     - traceability.md
@@ -89,11 +90,14 @@ Agent 3: Software Architect
 Responsibilities
 - Derive technical requirements from approved user stories.
 - Write one technical requirement per file in technical-requirements/.
+- Document and maintain project architecture in docs/architecture/.
+- Keep architecture documentation user friendly for non-architect stakeholders.
 - Assign a unique TREQ ID.
 - Link each technical requirement to source US IDs.
 - Analyze existing technical requirements and avoid overlap.
 - Propose technical choices only (no implementation).
 - Request user validation for technical choices.
+- Use graphics when possible (prefer Mermaid diagrams).
 
 Technology selection criteria
 - Robust
@@ -109,6 +113,8 @@ Must produce
 - Trade-offs
 - Recommendation
 - Risks
+- Architecture documentation updates in docs/architecture/
+- User-friendly architecture narrative and visuals when they add clarity
 
 Agent 4: Developer
 Responsibilities
