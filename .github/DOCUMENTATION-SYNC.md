@@ -70,5 +70,22 @@ After updates, verify:
 
 ---
 
+## Quality Feedback Patterns
+When agents are updated with new feedback/review responsibilities, ensure the pattern is consistent:
+
+- **Need Collector Review** (before REQ finalization):
+  - `.github/agents/need-collector.agent.md` — references Product Owner feedback requirement
+  - `.github/agents/product-owner.agent.md` — has review-only mode for REQ feedback
+  - `.github/copilot-instructions.md` — mentions this workflow in Execution Model
+
+- **Product Owner → Developer Review** (before US finalization):
+  - `.github/agents/product-owner.agent.md` — includes Developer Gherkin feedback step
+  - `.github/agents/developer.agent.md` — has review-only Gherkin review mode
+  - `.github/copilot-instructions.md` — mentions Gherkin feedback in Execution Model and Quality Rules
+  - `prompt-initialisation.txt` — lists both agents' feedback responsibilities
+  - `readme.md` — shows Developer role includes Gherkin validation (Gate 2)
+
+---
+
 **Last Updated:** 2026-05-06  
 **Update Trigger:** When any `.github/agents/*.agent.md` file is modified

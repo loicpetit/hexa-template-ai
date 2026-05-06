@@ -57,7 +57,7 @@ traceability.md                ← Live traceability matrix (all agents)
 
 ## Approved Agent Workflows
 1. **Need Collector** → Creates atomic REQs with Product Owner first-pass feedback
-2. **Product Owner** → Converts REQs to US (Gate 2), creates feature guides post-implementation (Gate 4)
+2. **Product Owner** → Converts REQs to US (Gate 2) with Developer Gherkin validation, creates feature guides post-implementation (Gate 4)
 3. **Software Architect** → Creates TREQs from approved US (Gate 3)
-4. **Developer** → Implements features per approved TREQs (Gate 4)
+4. **Developer** → Reviews Gherkin scenarios for testability (Gate 2), implements features per approved TREQs (Gate 4)
 5. **Tester** → Creates and runs E2E tests, validates feature behavior (Gate 4)

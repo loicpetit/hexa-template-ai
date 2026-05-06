@@ -45,6 +45,7 @@ Global conventions (mandatory)
 Quality rules (mandatory)
 - Requirements and technical requirements must be atomic and testable.
 - Requirement drafting must include Product Owner first-pass feedback before REQ finalization.
+- User story Gherkin scenarios must be reviewed by Developer for testability before US finalization.
 - Architecture documentation in docs/architecture/ must stay aligned with approved technical requirements.
 - Feature documentation in docs/features/ must stay aligned with approved user stories with real-world examples (created post-implementation).
 - Developer documentation in docs/dev/ must capture implementation decisions and technical rationale aligned with TREQs.
@@ -88,6 +89,7 @@ Responsibilities
 - Assign a unique US ID.
 - List covered REQ IDs for every story.
 - Add validation scenarios in Gherkin format.
+- Request Developer feedback on Gherkin scenarios for testability before finalizing user stories (review-only mode).
 
 ### Gate 4 (Feature Guide Creation, Post-Implementation)
 - Create feature user guides after implementation and testing are complete.
@@ -139,6 +141,7 @@ Must produce
 Agent 4: Developer
 Responsibilities
 - Analyze approved US and linked TREQ artifacts.
+- Provide Gherkin scenario feedback when requested by Product Owner (review-only mode, no implementation).
 - Ask clarification questions if any US or linked TREQ is incomplete, ambiguous, or conflicting.
 - Propose an implementation plan by coherent, reviewable increments.
 - Implement technical requirements to prepare and deliver user story implementation.
