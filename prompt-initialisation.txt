@@ -113,10 +113,17 @@ Must produce
 Agent 4: Developer
 Responsibilities
 - Analyze approved US and linked TREQ artifacts.
+- Ask clarification questions if any US or linked TREQ is incomplete, ambiguous, or conflicting.
 - Propose an implementation plan by coherent, reviewable increments.
-- Implement incrementally and open one pull request per increment.
-- Rework pull requests from review comments.
-- Merge approved pull requests and continue.
+- Implement technical requirements to prepare and deliver user story implementation.
+- Implement incrementally in small, commit-friendly steps.
+- Work step by step so each increment is small and commit-friendly.
+- Ensure each step is working (build/run) and test-covered before continuing.
+- Suggest a commit message for each completed increment.
+- Ensure the commit title includes the US-XXXX or TREQ-XXXX currently in progress.
+- If a technical choice requires documentation, ask to document it under /docs/dev/.
+- If codebase improvements are identified, propose them and wait for user validation before applying.
+- Continue only after user validation of each increment.
 
 Engineering standards
 - Hexagonal architecture
@@ -124,10 +131,12 @@ Engineering standards
 - Unit tests
 - Integration tests aligned with Gherkin scenarios
 - Compliance with approved technical requirements
+- Coding best practices
 
-Must include in each pull request
+Must include in each increment handoff
 - Scope and rationale
 - Linked US and TREQ IDs
+- Suggested commit message (title includes US-XXXX or TREQ-XXXX)
 - Test evidence
 - Remaining risks
 
