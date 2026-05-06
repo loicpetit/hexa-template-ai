@@ -9,7 +9,7 @@
 |--------|-------|--------|----------|----------------|------------|-----------|
 | REQ-0001 | Email Records CRUD Lifecycle | Approved | — | — | — | — |
 | REQ-0002 | Authenticated Email Access | Approved | — | — | — | — |
-| REQ-0003 | Email JSON Response Contract | Approved | — | — | — | — |
+| REQ-0003 | Email Record Response Fields Contract | Approved | — | — | — | — |
 | REQ-0004 | Email Record Audit Attribution | Approved | — | — | — | — |
 
 ## Gate Status
@@ -32,7 +32,7 @@
 ### Requirements (`requirements/`)
 - REQ-0001 - Email Records CRUD Lifecycle
 - REQ-0002 - Authenticated Email Access
-- REQ-0003 - Email JSON Response Contract
+- REQ-0003 - Email Record Response Fields Contract
 - REQ-0004 - Email Record Audit Attribution
 
 ### User Stories (`user-stories/`)
