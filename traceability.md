@@ -1,15 +1,16 @@
 # Traceability Matrix
 
-> Last updated: 2026-05-05  
-> Status: Active — 3 Approved requirements.
+> Last updated: 2026-05-06  
+> Status: Active — 4 Approved requirements.
 
 ## Matrix
 
 | REQ ID | Title | Status | US ID(s) | Feature Guide | TREQ ID(s) | E2E ID(s) |
 |--------|-------|--------|----------|----------------|------------|-----------|
 | REQ-0001 | Email Records CRUD Lifecycle | Approved | — | — | — | — |
-| REQ-0002 | Authenticated Email Access and Audit Attribution | Approved | — | — | — | — |
+| REQ-0002 | Authenticated Email Access | Approved | — | — | — | — |
 | REQ-0003 | Email JSON Response Contract | Approved | — | — | — | — |
+| REQ-0004 | Email Record Audit Attribution | Approved | — | — | — | — |
 
 ## Gate Status
 
@@ -30,8 +31,9 @@
 
 ### Requirements (`requirements/`)
 - REQ-0001 - Email Records CRUD Lifecycle
-- REQ-0002 - Authenticated Email Access and Audit Attribution
+- REQ-0002 - Authenticated Email Access
 - REQ-0003 - Email JSON Response Contract
+- REQ-0004 - Email Record Audit Attribution
 
 ### User Stories (`user-stories/`)
 _None yet._
