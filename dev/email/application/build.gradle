@@ -1,0 +1,6 @@
+// Application module — use case orchestration and port interfaces
+
+dependencies {
+    // Domain module (always available, no framework dependencies)
+    implementation project(':email:domain')
+}

@@ -1,0 +1,6 @@
+// Persistence adapters — repository, auth provider, audit logger implementations
+
+dependencies {
+    // Application layer (interfaces and DTOs)
+    implementation project(':email:application')
+}

@@ -1,0 +1,13 @@
+// Primary adapter — REST API endpoints
+
+dependencies {
+    // Application layer (interfaces and DTOs)
+    implementation project(':email:application')
+
+    // Persistence adapters (for repository, auth, audit)
+    implementation project(':email:adapter-persistence')
+
+    // Spring Boot (only applied at this adapter level, not in domain/application)
+    implementation "org.springframework.boot:spring-boot:${springBootVersion}"
+    implementation "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
+}

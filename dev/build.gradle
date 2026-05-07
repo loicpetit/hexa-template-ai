@@ -22,10 +22,11 @@ subprojects {
     }
 
     ext {
-        lombokVersion  = '1.18.34'
-        junitVersion   = '5.10.5'
-        mockitoVersion = '5.7.0'
-        assertjVersion = '3.26.0'
+        springBootVersion = '3.5.0'
+        lombokVersion     = '1.18.34'
+        junitVersion      = '5.10.5'
+        mockitoVersion    = '5.7.0'
+        assertjVersion    = '3.26.0'
     }
 
     dependencies {

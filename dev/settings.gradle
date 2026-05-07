@@ -10,3 +10,6 @@ pluginManagement {
 rootProject.name = 'hexa-template-ai'
 
 include 'email:domain'
+include 'email:application'
+include 'email:adapter-persistence'
+include 'email:adapter-rest'
