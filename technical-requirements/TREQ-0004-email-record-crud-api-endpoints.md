@@ -2,28 +2,31 @@
 
 ## Metadata
 - ID: TREQ-0004
-- Status: Draft
+- Status: Approved
 - Created: 2026-05-07
 - Updated: 2026-05-07
 - Author Agent: Software Architect
-- Source User Stories: US-0001, US-0002, US-0003, US-0004
-- Related IDs: REQ-0001, REQ-0003, TREQ-0001
+- Source User Stories: US-0001, US-0002, US-0003, US-0004, US-0005
+- Related IDs: REQ-0001, REQ-0003, TREQ-0001, TREQ-0010, TREQ-0011
 - Source Links: [requirements/REQ-0001-email-crud-api.md](../requirements/REQ-0001-email-crud-api.md), [requirements/REQ-0003-email-record-response-fields-contract.md](../requirements/REQ-0003-email-record-response-fields-contract.md)
-- Architecture Links: [docs/architecture/architecture-overview.md](../docs/architecture/architecture-overview.md)
+- Architecture Links: [docs/architecture/architecture-overview.md](../docs/architecture/architecture-overview.md), [technical-requirements/TREQ-0010-http-error-response-schema.md](TREQ-0010-http-error-response-schema.md), [technical-requirements/TREQ-0011-optimistic-concurrency-control-if-unmodified-since.md](TREQ-0011-optimistic-concurrency-control-if-unmodified-since.md)
 
 ## Technical Requirement Statement
-The system shall provide HTTP REST API endpoints for creating, reading, updating, and hard-deleting email records. Each endpoint shall require authentication (HTTP Authorization header with bearer token). All endpoints shall return responses with consistent JSON schema including required fields (id, value, created, createdBy, updated, updatedBy). Endpoint errors shall return appropriate HTTP status codes and error descriptions.
+The system shall provide HTTP REST API endpoints for creating, reading, updating, and hard-deleting email records. Each endpoint shall require authentication (HTTP Authorization header with bearer token). All endpoints shall return responses with consistent JSON schema including only public fields (id, value), except list operations which also include updated timestamp. Internal metadata (created, createdBy, updatedBy) shall not be exposed in response bodies and shall be used for audit purposes only. Single-record operations (create, read, update) shall include Last-Modified header with RFC 7231 formatted updated timestamp to enable optimistic concurrency control via If-Unmodified-Since request header (TREQ-0011). Endpoint errors shall return appropriate HTTP status codes and error descriptions per TREQ-0010.
 
 ## Constraints
 - All endpoints must require authentication (401 Unauthorized if token missing/invalid).
 - All endpoints must accept JSON request bodies (for create/update operations).
-- All endpoints must return JSON responses with consistent schema.
+- Single-record endpoints (create, read by id, update) return only id and value in response body.
+- List endpoint returns id, value, and updated in response body (for each record).
+- All successful single-record responses must include Last-Modified header with RFC 7231 formatted updated timestamp (for concurrency control).
+- Internal metadata (created, createdBy, updatedBy) must not be exposed in response bodies.
 - Create response must return HTTP 201 Created.
 - Read response must return HTTP 200 OK.
 - List response must return HTTP 200 OK with array of records.
 - Update response must return HTTP 200 OK.
 - Delete response must return HTTP 204 No Content.
-- Error responses must include status code and error message.
+- Error responses must include status code and error message (see TREQ-0010).
 - Request/response payloads must not include sensitive data (e.g., auth tokens, internal ids in non-standard ways).
 
 ## Existing Coverage Check
@@ -63,19 +66,20 @@ The system shall provide HTTP REST API endpoints for creating, reading, updating
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
-  "value": "user@example.com",
-  "created": "2026-05-07T14:30:00Z",
-  "createdBy": "user-123",
-  "updated": "2026-05-07T14:30:00Z",
-  "updatedBy": "user-123"
+  "value": "user@example.com"
 }
 ```
 
-**Error Responses**:
-- Missing token → HTTP 401 Unauthorized: `{ "message": "Authentication required" }`
-- Invalid token → HTTP 401 Unauthorized: `{ "message": "Invalid or expired token" }`
-- Invalid email format → HTTP 400 Bad Request: `{ "message": "Invalid email format" }`
-- Invalid request body → HTTP 400 Bad Request: `{ "message": "Missing required field: value" }`
+Response headers:
+```
+Last-Modified: Wed, 07 May 2026 14:30:00 GMT
+```
+
+**Error Responses** (see TREQ-0010 for unified error response schema):
+- Missing token → HTTP 401 Unauthorized: `{ "error": { "code": "UNAUTHORIZED", "message": "Authentication required", "timestamp": "2026-05-07T14:30:00Z" } }`
+- Invalid token → HTTP 401 Unauthorized: `{ "error": { "code": "UNAUTHORIZED", "message": "Invalid or expired token", "timestamp": "2026-05-07T14:30:00Z" } }`
+- Invalid email format → HTTP 400 Bad Request: `{ "error": { "code": "INVALID_EMAIL_FORMAT", "message": "Invalid email format", "timestamp": "2026-05-07T14:30:00Z" } }`
+- Invalid request body → HTTP 400 Bad Request: `{ "error": { "code": "INVALID_REQUEST", "message": "Missing required field: value", "timestamp": "2026-05-07T14:30:00Z" } }`
 
 **Use Case**: CreateEmailRecord (orchestrates domain entity creation, audit capture, repository save)
 
@@ -92,21 +96,14 @@ The system shall provide HTTP REST API endpoints for creating, reading, updating
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
-  "value": "user@example.com",
-  "created": "2026-05-07T14:30:00Z",
-  "createdBy": "user-123",
-  "updated": "2026-05-07T14:35:00Z",
-  "updatedBy": "user-123"
+  "value": "user@example.com"
 }
 ```
 
-**Error Responses**:
-- Missing token → HTTP 401 Unauthorized: `{ "message": "Authentication required" }`
-- Invalid token → HTTP 401 Unauthorized: `{ "message": "Invalid or expired token" }`
-- Record not found → HTTP 404 Not Found: `{ "message": "Email record not found" }`
-- Invalid id format → HTTP 400 Bad Request: `{ "message": "Invalid email record id" }`
-
-**Use Case**: ReadEmailRecord (orchestrates repository query by id, returns DTO)
+Response headers:
+```
+Last-Modified: Wed, 07 May 2026 14:30:00 GMT
+```
 
 ---
 
@@ -123,25 +120,25 @@ The system shall provide HTTP REST API endpoints for creating, reading, updating
   {
     "id": "550e8400-e29b-41d4-a716-446655440000",
     "value": "user@example.com",
-    "created": "2026-05-07T14:30:00Z",
-    "createdBy": "user-123",
-    "updated": "2026-05-07T14:35:00Z",
-    "updatedBy": "user-123"
+    "lastModified": "2026-05-07T14:30:00Z"
   },
   {
     "id": "660e8400-e29b-41d4-a716-446655440111",
     "value": "another@example.com",
-    "created": "2026-05-07T14:40:00Z",
-    "createdBy": "user-456",
-    "updated": "2026-05-07T14:40:00Z",
-    "updatedBy": "user-456"
+    "lastModified": "2026-05-07T14:45:00Z"
   }
 ]
 ```
 
-**Error Responses**:
-- Missing token → HTTP 401 Unauthorized: `{ "message": "Authentication required" }`
-- Invalid token → HTTP 401 Unauthorized: `{ "message": "Invalid or expired token" }`
+Response headers:
+```
+Last-Modified: Wed, 07 May 2026 14:45:00 GMT
+```
+(Last-Modified reflects the most recent record's updated timestamp)
+
+**Error Responses** (see TREQ-0010 for unified error response schema):
+- Missing token → HTTP 401 Unauthorized: `{ "error": { "code": "UNAUTHORIZED", "message": "Authentication required", "timestamp": "2026-05-07T14:30:00Z" } }`
+- Invalid token → HTTP 401 Unauthorized: `{ "error": { "code": "UNAUTHORIZED", "message": "Invalid or expired token", "timestamp": "2026-05-07T14:30:00Z" } }`
 
 **Use Case**: ListEmailRecords (orchestrates repository query all, returns array of DTOs)
 
@@ -150,9 +147,13 @@ The system shall provide HTTP REST API endpoints for creating, reading, updating
 #### 4. Update Email Record
 **HTTP Method & Path**: `PUT /emails/{id}`  
 **Authentication**: Required (Bearer token)
+**Concurrency Control**: Required (See TREQ-0011 for details)
 
 **Path Parameters**:
 - `id` (required): Email record identifier
+
+**Headers** (required):
+- `If-Unmodified-Since` (required): RFC 7231 date matching email record's last known `updated` timestamp (e.g., `Wed, 07 May 2026 14:30:00 GMT`). See TREQ-0011 for concurrency control details.
 
 **Request**:
 ```json
@@ -163,28 +164,36 @@ The system shall provide HTTP REST API endpoints for creating, reading, updating
 
 **Request Validation**:
 - `value` is required, must be non-empty string, valid email format
+- `If-Unmodified-Since` header is required; missing → HTTP 400 Bad Request
 - Invalid request → HTTP 400 Bad Request
 
-**Response** (HTTP 200 OK):
+**Response** (HTTP 200 OK — update succeeded):
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
-  "value": "newemail@example.com",
-  "created": "2026-05-07T14:30:00Z",
-  "createdBy": "user-123",
-  "updated": "2026-05-07T14:45:00Z",
-  "updatedBy": "user-123"
+  "value": "newemail@example.com"
 }
 ```
 
-**Error Responses**:
-- Missing token → HTTP 401 Unauthorized: `{ "message": "Authentication required" }`
-- Invalid token → HTTP 401 Unauthorized: `{ "message": "Invalid or expired token" }`
-- Record not found → HTTP 404 Not Found: `{ "message": "Email record not found" }`
-- Invalid email format → HTTP 400 Bad Request: `{ "message": "Invalid email format" }`
-- Invalid id format → HTTP 400 Bad Request: `{ "message": "Invalid email record id" }`
+Response headers:
+```
+Last-Modified: Wed, 07 May 2026 14:45:00 GMT
+```
 
-**Use Case**: UpdateEmailRecord (orchestrates repository query, domain entity update, audit capture, repository save)
+**Response** (HTTP 409 Conflict — record modified since If-Unmodified-Since timestamp):
+- See TREQ-0011 for detailed conflict response format
+- Includes current record state for client reconciliation
+
+**Error Responses**:
+- Missing token → HTTP 401 Unauthorized
+- Invalid token → HTTP 401 Unauthorized
+- Record not found → HTTP 404 Not Found
+- Invalid email format → HTTP 400 Bad Request
+- Missing If-Unmodified-Since header → HTTP 400 Bad Request
+- Record modified (concurrency conflict) → HTTP 409 Conflict (see TREQ-0011)
+- Other errors → See TREQ-0010 for unified error response schema
+
+**Use Case**: UpdateEmailRecord (orchestrates concurrency check, repository query, domain entity update, audit capture, repository save)
 
 ---
 
@@ -198,11 +207,9 @@ The system shall provide HTTP REST API endpoints for creating, reading, updating
 **Response** (HTTP 204 No Content):
 - Empty body (no content returned on successful deletion)
 
-**Error Responses**:
-- Missing token → HTTP 401 Unauthorized: `{ "message": "Authentication required" }`
-- Invalid token → HTTP 401 Unauthorized: `{ "message": "Invalid or expired token" }`
-- Record not found → HTTP 404 Not Found: `{ "message": "Email record not found" }`
-- Invalid id format → HTTP 400 Bad Request: `{ "message": "Invalid email record id" }`
+**Error Responses** (see TREQ-0010 for unified error response schema):
+- Missing token → HTTP 401 Unauthorized: `{ "error": { "code": "UNAUTHORIZED", "message": "Authentication required", "timestamp": "2026-05-07T14:30:00Z" } }`
+- Invalid token → HTTP 401 Unauthorized: `{ "error": { "code": "UNAUTHORIZED", "message": "Invalid or expired token", "timestamp": "2026-05-07T14:30:00Z" } }`
 
 **Use Case**: HardDeleteEmailRecord (orchestrates repository deletion, returns confirmation)
 
@@ -211,25 +218,33 @@ The system shall provide HTTP REST API endpoints for creating, reading, updating
 ## Response Schema (Shared by All Endpoints)
 
 ### Success Response: Email Record DTO
+
+**Single-Record DTO (POST, GET by id, PUT):**
 ```typescript
 interface EmailRecordDTO {
-  id: string                          // UUID v4
-  value: string                       // Email address
-  created: string                     // ISO 8601 timestamp
-  createdBy: string                   // User id
-  updated: string                     // ISO 8601 timestamp
-  updatedBy: string                   // User id
+  id: string                          // UUID v4 (public)
+  value: string                       // Email address (public)
+  // Internal metadata NOT exposed: created, createdBy, updated, updatedBy
+  // Last-Modified header contains updated timestamp for concurrency control
 }
 ```
 
-### Error Response Schema
+**List Record DTO (GET all):**
 ```typescript
-interface ErrorResponse {
-  message: string                     // Human-readable error description
-  code?: string                       // Optional: error code for client handling
-  timestamp?: string                  // Optional: ISO 8601 timestamp of error
+interface EmailRecordListItemDTO {
+  id: string                          // UUID v4 (public)
+  value: string                       // Email address (public)
+  lastModified: string                // ISO 8601 timestamp (public in list only; semantic match to Last-Modified header)
+  // Internal metadata NOT exposed: created, createdBy, updatedBy
 }
 ```
+
+### Response Headers
+All successful responses include:
+- `Last-Modified: <RFC 7231 date>` — Matches the email record's `updated` timestamp (for concurrency control; see TREQ-0011)
+
+### Error Response Schema
+See TREQ-0010 for unified HTTP error response schema used by all endpoints.
 
 ---
 
@@ -404,8 +419,8 @@ interface ErrorResponse {
 
 ## Validation
 - Requester validation required: No (REST API is recommended baseline)
-- Validation status: Proposed
-- Developer feedback required: Yes (implementability feedback requested)
+- Validation status: Approved ✓ (2026-05-07)
+- Requester selected option: Option A — REST API; If-Unmodified-Since for concurrency control; unified error schema (TREQ-0010)
 
 ## Notes
 - All timestamps serialized as ISO 8601 strings (e.g., "2026-05-07T14:30:00Z") for JSON compatibility.
