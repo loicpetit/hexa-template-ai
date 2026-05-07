@@ -1,0 +1,4 @@
+// Domain module — pure Java, no external dependencies (TREQ-0001, TREQ-0003)
+dependencies {
+    // No production dependencies by design: framework-independent domain layer
+}

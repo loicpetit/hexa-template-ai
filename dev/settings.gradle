@@ -1,0 +1,12 @@
+pluginManagement {
+    repositories {
+        maven {
+            url = uri("https://nexus.agipi.net/nexus/content/groups/developpement")
+        }
+        gradlePluginPortal()
+    }
+}
+
+rootProject.name = 'hexa-template-ai'
+
+include 'email:domain'
