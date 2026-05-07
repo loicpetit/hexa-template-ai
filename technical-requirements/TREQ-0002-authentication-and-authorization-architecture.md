@@ -35,47 +35,25 @@ The system shall enforce authentication (identity verification) on all email rec
 
 ### Authentication Port (Contract)
 **Location**: `ports/authentication-port.ts`
-**Responsibility**: Abstract authentication details from use cases and domain  
-**Interface**:
-```typescript
-interface IAuthProvider {
-  /**
-   * Resolve current user from request context
-   * Returns User object with verified identity or null if unauthenticated
-   */
-  getCurrentUser(request: HttpRequest): Promise<User | null>
-}
+**Responsibility**: Abstract authentication details from use cases and domain
 
-interface User {
-  id: string                  // Unique user identifier (from identity provider)
-  name: string               // User display name
-  email: string              // User email address
-  roles?: string[]           // Optional: user roles for future authorization rules
-}
-```
+**Contract**:
+- `getCurrentUser(request)` → returns resolved `User` object or `null` if unauthenticated
+- `User` shape: `{ id: string, name: string, email: string, roles?: string[] }`
+  - `id`: Unique user identifier (from identity provider)
+  - `name`: User display name
+  - `email`: User email address
+  - `roles`: Optional — reserved for future authorization rules
 
 ### Authentication Enforcement (Application Layer)
-**Location**: `application/use-cases/*`  
-**Responsibility**: Check authenticated user before executing use case logic  
-**Pattern** (each use case):
-```typescript
-async execute(request: CreateEmailRecordRequest) {
-  // 1. Authenticate: check user identity
-  const user = await this.authProvider.getCurrentUser(request.httpContext)
-  if (!user) {
-    throw new UnauthorizedError('Authentication required')
-  }
-  
-  // 2. Authorize: check permissions (future use)
-  // if (!this.canUserCreateEmail(user)) {
-  //   throw new ForbiddenError('Permission denied')
-  // }
-  
-  // 3. Execute business logic with authenticated user context
-  const email = await this.createEmailRecord(user, request.emailValue)
-  return email
-}
-```
+**Location**: `application/use-cases/*`
+**Responsibility**: Check authenticated user before executing use case logic
+
+**Enforcement pattern** (applied to every use case):
+1. Resolve current user via `IAuthProvider.getCurrentUser(request)`
+2. If no user resolved → throw `UnauthorizedError` (results in HTTP 401)
+3. Pass resolved user identity into business logic (for audit attribution)
+4. Future: check authorization rules before execution (out of scope for baseline)
 
 ### Authentication Adapter (Implementation)
 **Location**: `adapters/driven/authentication-adapter`  

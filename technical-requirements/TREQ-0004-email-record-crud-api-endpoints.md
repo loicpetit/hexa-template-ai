@@ -220,24 +220,23 @@ Last-Modified: Wed, 07 May 2026 14:45:00 GMT
 ### Success Response: Email Record DTO
 
 **Single-Record DTO (POST, GET by id, PUT):**
-```typescript
-interface EmailRecordDTO {
-  id: string                          // UUID v4 (public)
-  value: string                       // Email address (public)
-  // Internal metadata NOT exposed: created, createdBy, updated, updatedBy
-  // Last-Modified header contains updated timestamp for concurrency control
-}
-```
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `id` | string | UUID v4 (public) |
+| `value` | string | Email address (public) |
+
+Internal metadata (`created`, `createdBy`, `updated`, `updatedBy`) is NOT exposed. The `Last-Modified` response header carries the updated timestamp for concurrency control.
 
 **List Record DTO (GET all):**
-```typescript
-interface EmailRecordListItemDTO {
-  id: string                          // UUID v4 (public)
-  value: string                       // Email address (public)
-  lastModified: string                // ISO 8601 timestamp (public in list only; semantic match to Last-Modified header)
-  // Internal metadata NOT exposed: created, createdBy, updatedBy
-}
-```
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `id` | string | UUID v4 (public) |
+| `value` | string | Email address (public) |
+| `lastModified` | string | ISO 8601 UTC timestamp (public in list only; semantic match to `Last-Modified` header) |
+
+Internal metadata (`created`, `createdBy`, `updatedBy`) is NOT exposed.
 
 ### Response Headers
 All successful responses include:

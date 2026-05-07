@@ -89,32 +89,16 @@ The system shall be organized using hexagonal architecture (ports and adapters p
 **Responsibility**: Define interfaces that isolate domain/application from infrastructure  
 **Outbound Ports**:
 - `ports/repository-port.ts`
-  ```typescript
-  interface IEmailRepository {
-    save(email: EmailRecord): Promise<EmailRecord>
-    findById(id: string): Promise<EmailRecord | null>
-    findAll(): Promise<EmailRecord[]>
-    delete(id: string): Promise<void>
-  }
-  ```
-  **Rationale**: Repository pattern allows swapping databases without changing domain or use cases
+  - Contract: `save(email)`, `findById(id)`, `findAll()`, `delete(id)`
+  - **Rationale**: Repository pattern allows swapping databases without changing domain or use cases
 
 - `ports/authentication-port.ts`
-  ```typescript
-  interface IAuthProvider {
-    getCurrentUser(request: HttpRequest): Promise<User | null>
-    // Returns { id: string, name: string, email: string }
-  }
-  ```
-  **Rationale**: Abstracts authentication scheme (JWT, OAuth, etc.); testable with mock provider
+  - Contract: `getCurrentUser(request)` → returns resolved user `{ id, name, email }` or null if unauthenticated
+  - **Rationale**: Abstracts authentication scheme (JWT, OAuth, etc.); testable with mock provider
 
 - `ports/audit-logger-port.ts`
-  ```typescript
-  interface IAuditLogger {
-    log(action: string, actor: User, entity: EmailRecord): Promise<void>
-  }
-  ```
-  **Rationale**: Audit trail storage decoupled from domain; can log to database, file, or external service
+  - Contract: `log(action, actor, entity)` where action is one of `CREATE | UPDATE | DELETE`
+  - **Rationale**: Audit trail storage decoupled from domain; can log to database, file, or external service
 
 ---
 
