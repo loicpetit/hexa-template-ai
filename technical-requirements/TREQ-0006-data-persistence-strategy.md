@@ -2,28 +2,27 @@
 
 ## Metadata
 - ID: TREQ-0006
-- Status: Draft
+- Status: Approved
 - Created: 2026-05-07
 - Updated: 2026-05-07
 - Author Agent: Software Architect
-- Source User Stories: US-0001, US-0002, US-0003, US-0004
+- Source User Stories: US-0001, US-0002, US-0003, US-0004, US-0005
 - Related IDs: REQ-0001, TREQ-0001, TREQ-0003
 - Source Links: [requirements/REQ-0001-email-crud-api.md](../requirements/REQ-0001-email-crud-api.md)
 - Architecture Links: [docs/architecture/architecture-overview.md](../docs/architecture/architecture-overview.md)
 
 ## Technical Requirement Statement
-The system shall persist email records using a database backend accessed through a repository port interface. The repository port shall abstract database implementation details, allowing different database technologies and query strategies to be swapped without changing use cases or domain logic. The repository shall implement ACID-compliant persistence (transactions for data consistency) and shall provide query operations for create, read, read-all, update, and delete by id. Records shall include all required fields (id, value, created, updated, createdBy, updatedBy) with constraints enforced at both domain and database layers.
+The system shall persist email records in a process-scoped in-memory store, implemented as a singleton module that holds data for the lifetime of the running process. The repository port interface (IEmailRepository) abstracts the in-memory implementation from use cases and domain logic, allowing a database-backed adapter to be swapped in later without changing any business logic. Data does not survive process restarts; this is accepted for the current scope.
 
 ## Constraints
-- Repository must implement ACID transactions (atomicity, consistency, isolation, durability).
-- Create operation must ensure id uniqueness; duplicate id attempts rejected with error.
-- Email value should be unique across records (optional per option below; confirmed at Gate 3).
-- Read operations must return full EmailRecord entity or null if not found.
-- Update operations must be atomic (either fully update or fully rollback).
-- Delete operation must permanently remove record (no soft delete).
-- All database errors must be mapped to domain exceptions (not leak database details to use cases).
-- Repository implementation must be pluggable via IEmailRepository port interface.
-- Database schema must enforce constraints where appropriate (id primary key, value unique, not-null).
+- In-memory store is process-scoped: data does not survive server restarts. This is explicitly accepted for the current scope.
+- The store must be a singleton module (single shared instance per process).
+- Create operation must enforce id uniqueness; duplicate id attempts rejected with `DuplicateKeyError`.
+- Email value must be unique across records; duplicate value attempts rejected.
+- Read operations must return the full EmailRecord entity or null if not found.
+- Delete operation must permanently remove the record; throws `NotFoundError` if absent.
+- All store errors must be mapped to domain exceptions; no implementation details leaked to use cases.
+- Repository implementation must be pluggable via IEmailRepository port interface so a database adapter can replace it without touching use cases or domain.
 
 ## Existing Coverage Check
 - Similar TREQ checked: None (first persistence TREQ)
@@ -38,290 +37,180 @@ The system shall persist email records using a database backend accessed through
 ## Technical Module Organization
 
 ### Repository Port (Contract)
-**Location**: `ports/repository-port.ts`  
+**Location**: `ports/repository-port.ts`
 **Responsibility**: Abstract data persistence from use cases
 
-**Interface**:
-```typescript
-interface IEmailRepository {
-  /**
-   * Save a new email record or update existing
-   * @param email - EmailRecord entity to persist
-   * @returns - Persisted entity
-   * @throws - DuplicateKeyError if id already exists (on create)
-   * @throws - RepositoryError on database errors
-   */
-  save(email: EmailRecord): Promise<EmailRecord>
-  
-  /**
-   * Find email record by id
-   * @param id - Email record id
-   * @returns - EmailRecord if found, null otherwise
-   * @throws - RepositoryError on database errors
-   */
-  findById(id: string): Promise<EmailRecord | null>
-  
-  /**
-   * Find all email records
-   * @returns - Array of EmailRecord (empty if none exist)
-   * @throws - RepositoryError on database errors
-   */
-  findAll(): Promise<EmailRecord[]>
-  
-  /**
-   * Delete email record by id
-   * @param id - Email record id to delete
-   * @returns - void
-   * @throws - NotFoundError if record doesn't exist
-   * @throws - RepositoryError on database errors
-   */
-  delete(id: string): Promise<void>
-}
-```
+**Contract**:
 
-**Exception Mapping**:
-```typescript
-class DuplicateKeyError extends Error { }
-class NotFoundError extends Error { }
-class RepositoryError extends Error { }
-```
+| Operation | Signature | Behavior |
+|-----------|-----------|----------|
+| `save` | `save(email)` → persisted entity | Creates or updates; throws `DuplicateKeyError` if id already exists on create |
+| `findById` | `findById(id)` → entity or null | Returns entity if found, null otherwise |
+| `findAll` | `findAll()` → array of entities | Returns all records; empty array if none |
+| `delete` | `delete(id)` → void | Removes record; throws `NotFoundError` if absent |
+
+**Exception types**:
+- `DuplicateKeyError`: raised when saving an entity whose id already exists
+- `NotFoundError`: raised when deleting a non-existent record
+- `RepositoryError`: raised on unexpected database-level failures
 
 ---
 
 ### Repository Driven Adapter (Implementation)
-**Location**: `adapters/driven/repository-adapter`  
-**Responsibility**: Implement IEmailRepository using database technology
+**Location**: `adapters/driven/repository-adapter`
+**Responsibility**: Implement IEmailRepository using an in-memory singleton store
 
 **Subcomponents**:
-- **Schema Mapper**: Convert domain entity ↔ database row
-- **Query Builder**: Generate SQL or native database queries
-- **Transaction Handler**: Begin/commit/rollback transactions
-- **Error Handler**: Map database errors to domain exceptions
+- **In-memory store**: Singleton module holding a `Map<id, EmailRecord>` (or equivalent keyed collection) as the primary data structure
+- **Uniqueness guard**: On `save` (create path), verify `id` and `value` are not already present; throw `DuplicateKeyError` if either conflicts
+- **Error handler**: Map store-level errors to domain exceptions (`DuplicateKeyError`, `NotFoundError`)
+
+**Lifecycle**: Store is initialized at module load time and lives for the full process lifetime. No setup, teardown, or migration steps required.
 
 ---
 
-## Database Schema
+## Data Structure
 
-### Email Records Table
-```sql
-CREATE TABLE email_records (
-  -- Identity
-  id VARCHAR(36) PRIMARY KEY,                    -- UUID v4
-  
-  -- Business data
-  value VARCHAR(254) NOT NULL UNIQUE,           -- Email address (RFC 5321 limit: 254)
-  
-  -- Lifecycle
-  created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  
-  -- Audit
-  created_by VARCHAR(255) NOT NULL,              -- User id
-  updated_by VARCHAR(255) NOT NULL,              -- User id
-  
-  -- Indexes
-  INDEX idx_created_by (created_by),
-  INDEX idx_updated_by (updated_by),
-  INDEX idx_updated (updated)
-)
-```
+The in-memory adapter maintains the full EmailRecord entity in the store. No schema mapping or serialization is needed — domain entities are stored and retrieved directly.
 
-**Constraints Rationale**:
-- `id`: Primary key ensures uniqueness; UUID v4 allows distributed generation
-- `value`: Unique constraint prevents duplicate email addresses; not-null ensures required field
-- `created`, `updated`: Timestamps track lifecycle; not-null ensures valid data
-- `created_by`, `updated_by`: Store user id for audit trail; not-null enforces actor attribution
-- **Indexes**: Optimize queries for findAll (by creation order), audit queries (by actor)
+**Fields held per record** (mirrors EmailRecord domain entity per TREQ-0003):
+
+| Field | Notes |
+|-------|-------|
+| `id` | UUID v4; store key |
+| `value` | Email address; must be unique across all records |
+| `created` | UTC timestamp; set at creation, immutable |
+| `updated` | UTC timestamp; updated on each modification |
+| `createdBy` | User id; set at creation, immutable |
+| `updatedBy` | User id; updated on each modification |
 
 ---
 
 ## Alternatives
 
-### Option A: Relational Database (PostgreSQL / MySQL)
-**Approach**: Traditional SQL database with ACID guarantees
-- Schema: email_records table with constraints
-- ORM: TypeORM, Sequelize, or Prisma for entity mapping
-- Transactions: SQL transactions for atomic operations
+### Option A: In-Memory Singleton Store (Selected)
+**Approach**: Process-scoped singleton module holds all records in a keyed in-memory collection for the process lifetime.
 
 **Pros**:
-- ACID compliance built-in (guaranteed consistency)
-- Mature, battle-tested, widely used
-- Strong schema enforcement (constraints at database layer)
-- Good performance for structured data
-- Easy backup and recovery
-- Open-source option (PostgreSQL)
+- Zero setup — no external dependency, no server, no schema
+- Instant reads and writes (no I/O latency)
+- Trivial to test (fresh instance per test)
+- Fully consistent with hexagonal architecture (implements IEmailRepository port)
+- Adapter swap to a real database requires no changes to use cases or domain
 
 **Cons**:
-- Schema migrations required for changes
-- Requires database server setup and management
-- Scaling for writes (vertical scaling; horizontal requires sharding)
+- Data lost on process restart (not durable)
+- Not suitable for multi-instance deployments (each process has its own store)
+- No built-in query/filtering (must iterate in adapter)
 
-**Consistency impact**: Industry standard for business data; aligns with transactional requirements
+**Consistency impact**: Aligned — implements the same port interface; all other modules are unaffected
 
 ---
 
-### Option B: NoSQL Document Database (MongoDB)
-**Approach**: Flexible schema, document-oriented storage
-- Schema: Collections of JSON documents (no predefined schema)
-- Query: Native query language or aggregation pipeline
-- Transactions: Multi-document transactions (MongoDB 4.0+)
+### Option B: SQLite (File-Based SQL)
+**Approach**: Lightweight file-backed SQL database; no server needed.
 
-**Pros**:
-- Flexible schema (changes without migrations)
-- Natural JSON serialization (no ORM mapping needed)
-- Horizontal scalability (sharding)
-- Good for semi-structured data
+**Pros**: Durable (survives restarts); full SQL; ACID; no server
+**Cons**: File locking limits concurrency; requires schema migration tooling; more setup than in-memory
 
-**Cons**:
-- Weaker ACID guarantees (eventual consistency by default)
-- Requires explicit transaction setup (not automatic)
-- No schema enforcement (mistakes harder to catch)
-- Higher memory usage per document
-
-**Consistency impact**: Less aligned with transactional requirements; better for high-scale read-heavy systems
+**Consistency impact**: Aligned — same port interface; adapter complexity higher
 
 ---
 
-### Option C: SQLite (File-Based SQL)
-**Approach**: Lightweight, file-based SQL database
-- Schema: Local SQLite file (no server needed)
-- ORM: TypeORM, Sequelize, or Prisma
-- Transactions: SQLite transactions for atomic operations
+### Option C: PostgreSQL (Relational Database)
+**Approach**: Full relational database server with ACID guarantees.
 
-**Pros**:
-- No server setup needed (single file)
-- Easy to deploy and test
-- Full ACID support
-- Great for development/prototyping
+**Pros**: Production-grade; scalable; strong constraints
+**Cons**: Requires server setup and management; over-engineered for current scope
 
-**Cons**:
-- Poor concurrency (locks entire file on write)
-- No built-in replication (not suitable for production at scale)
-- Limited network access (file-based only)
-
-**Consistency impact**: Excellent for development; suitable for production only if single-writer, low-concurrency workload
+**Consistency impact**: Aligned — same port interface; highest operational overhead
 
 ---
 
 ## Top 3 Ranking
 
-1. **Option A: PostgreSQL (Relational Database)**
-   - Why: Best balance of ACID compliance, maturity, and scalability. Battle-tested for business systems. Open-source. Strong schema enforcement. Excellent support for complex queries and constraints.
+1. **Option A: In-Memory Singleton Store** — Zero friction, no dependencies, easily replaceable via port interface. Right choice for current scope.
+2. **Option B: SQLite** — Natural upgrade path when durability is needed; same hexagonal alignment.
+3. **Option C: PostgreSQL** — Right choice for production scale; out of scope for now.
 
-2. **Option B: MongoDB (NoSQL Document)**
-   - Why: Better for highly scalable, eventually-consistent systems. Consider if horizontal scaling becomes critical requirement.
-
-3. **Option C: SQLite (File-Based SQL)**
-   - Why: Perfect for development and testing. Acceptable for production if single-writer, low-concurrency workload. Not recommended for multi-instance deployment.
+If fewer than 3 realistic options exist, list only valid options and explain why.
 
 ## Trade-Offs
 
-- **Schema Flexibility vs. Data Safety**: Relational enforces schema (safety); NoSQL flexible but risky. Trade: Relational chosen for data integrity priority.
-
-- **Scalability vs. Simplicity**: Relational simpler initially; NoSQL scales horizontally. Trade: Relational appropriate for baseline; can scale vertically or shard later if needed.
-
-- **ACID Guarantees vs. Performance**: Relational prioritizes consistency (slower); NoSQL optimizes performance (eventual consistency). Trade: Consistency critical for financial/business data.
-
-- **Deployment Complexity vs. Development Speed**: SQLite fast to deploy; production PostgreSQL requires more setup. Trade: PostgreSQL for production-ready baseline.
+- **Durability vs. Simplicity**: In-memory store loses data on restart; accepted trade-off for zero-setup simplicity in current scope.
+- **Multi-instance vs. Single-process**: In-memory store is not shareable across instances; acceptable for single-process deployment.
+- **Evolvability**: Port interface ensures this decision is reversible — replacing the adapter with SQLite or PostgreSQL later requires no changes to use cases or domain.
 
 ## Impact Analysis
 
 - **Functional impact**:
-  - Email records persisted durably (survive server restarts)
-  - ACID compliance ensures no partial updates
-  - Constraints prevent invalid data at database layer
-  - Hard delete removes records completely
+  - Email records available for the full process lifetime
+  - Data is lost on process restart (explicitly accepted)
+  - All CRUD operations work identically to a database-backed adapter from the use case perspective
 
 - **Module impact**:
-  - Adds: Repository port interface
-  - Adds: Repository driven adapter (database implementation)
-  - Adds: Database schema (email_records table, indexes, constraints)
-  - Adds: Schema migration scripts (if PostgreSQL selected)
+  - Adds: Repository port interface (`ports/repository-port.ts`)
+  - Adds: In-memory repository adapter (`adapters/driven/repository-adapter`)
+  - No database schema, migration scripts, or ORM dependency needed
 
 - **Interface and contract impact**:
-  - Internal: Use cases depend on IEmailRepository port; don't know database technology
-  - Database: email_records table schema with 6 columns, constraints, indexes
-  - Exception: Database errors mapped to domain exceptions (DuplicateKeyError, NotFoundError, RepositoryError)
+  - Internal: Use cases depend only on IEmailRepository port; unaware of in-memory implementation
+  - Exception contract: `DuplicateKeyError`, `NotFoundError` raised as per port contract
 
 - **Backward compatibility**: N/A (new project)
 
-- **Data and migration impact**: 
-  - Initial: Create email_records table at deploy time
-  - Future: Schema changes via migrations (e.g., add columns, indexes)
-  - Backup: Regular backups recommended (per deployment strategy)
+- **Data and migration impact**: None — no schema, no migration tooling required
 
 - **Operational impact**:
-  - Database setup: Deploy PostgreSQL server (if Option A)
-  - Maintenance: Monitor database performance, disk usage; apply security patches
-  - Backup/recovery: Regular backups and recovery testing required
-  - Monitoring: Track query performance, slow queries, connection pool health
+  - No external dependency to deploy or maintain
+  - Process restart clears all data (acceptable for current scope)
+  - No connection pooling, backup, or monitoring infrastructure needed
 
 - **Security and compliance impact**:
-  - Encryption: Database connections use SSL/TLS (deployment concern)
-  - Backup encryption: Backups encrypted at rest (deployment concern)
-  - Audit: Audit trail in audit_events table (linked to TREQ-0005)
-  - GDPR: Right to be forgotten (delete operation removes all user data per TREQ-0004)
+  - Data held in process memory; no at-rest encryption needed at this stage
+  - Audit trail still captured via IAuditLogger (TREQ-0005) regardless of store
 
 - **Testing impact**:
-  - Unit tests: Mock repository; no database needed
-  - Integration tests: In-memory or test database (SQLite for CI; PostgreSQL for production-like testing)
-  - E2E tests: Real database (staging environment or docker container)
-  - Fixtures: Seed test data before each test
+  - Unit tests: Use a fresh in-memory adapter instance per test (no mocking needed)
+  - Integration tests: Same adapter; no test database setup
+  - E2E tests: Data seeded programmatically before each test run
 
 - **Traceability impact**:
   - REQ-0001 (CRUD operations) → TREQ-0006 (persistence strategy)
-  - US-0001-0004 → TREQ-0006 (each use case uses repository)
-  - E2E tests verify data persists across requests
+  - US-0001 through US-0005 → TREQ-0006 (each use case uses repository)
 
 ## Recommendation
-- **Proposed best option**: Option A — PostgreSQL (Relational Database)
-- **Why**: 
-  - ACID compliance essential for business data consistency
-  - Mature, battle-tested, industry standard
-  - Strong schema enforcement prevents invalid data
-  - Excellent scaling story (vertical and eventual horizontal via sharding)
-  - Open-source reduces cost
-  - Wide support community and extensive documentation
-  - Natural fit for transactional email record management
+- **Proposed best option**: Option A — In-Memory Singleton Store
+- **Why**: Zero setup, no external dependencies, instant reads/writes, trivial to test. The hexagonal port interface fully preserves the option to swap to SQLite or PostgreSQL later without touching use cases or domain.
 - **Final decision owner**: Requester
-
-**Implementation notes if PostgreSQL selected**:
-- ORM: Recommend TypeORM or Prisma (both have excellent Node.js support)
-- Connection pooling: Use pg pool for efficient connection management
-- Migrations: Version schema changes in repository; run on deploy
-- Backup: Automated daily backups (deployment concern)
-- Monitoring: Monitor slow queries; index optimization
 
 ## Risks and Mitigations
 
 | Risk | Likelihood | Impact | Mitigation |
 |------|------------|--------|-----------|
-| Database becomes single point of failure | Medium | High | High availability setup (replication, failover); regular backups |
-| Query N+1 problem (inefficient queries) | Medium | Low | Use ORM eager loading; profile queries; add indexes |
-| Unique constraint violation (duplicate email) | Low | Medium | Add unique constraint in schema; validate before insert; retry logic |
-| Data corruption on hard delete | Low | High | Backup before major operations; soft delete option for recovery (future) |
-| Slow queries as data grows | Low | Medium | Monitor performance; add indexes; optimize queries; consider archiving old data |
+| Data loss on process restart | Certain | Accepted | Explicitly accepted for current scope; swap adapter to SQLite/PostgreSQL when durability is needed |
+| Unique constraint violation (duplicate email) | Low | Medium | Guard in adapter before insert; throw `DuplicateKeyError` |
+| Memory growth with large datasets | Low | Low | Acceptable for current scope; monitor if data volume grows significantly |
 
 ## Consistency Exception Assessment
 - Exception needed: No
-- PostgreSQL aligns with transactional system requirements and industry best practices
+- In-memory store is the simplest valid implementation of the IEmailRepository port. Durability trade-off is explicitly accepted for the current scope.
 
 ## Validation
 - Requester validation required: Yes
-- Validation status: Pending
-- Requester selected option: (Required before Approved) — Choose Option A (PostgreSQL), B (MongoDB), or C (SQLite)
+- Validation status: Approved
+- Requester selected option: A — In-Memory Singleton Store
 
 ## Notes
-- Email value uniqueness (UNIQUE constraint) prevents duplicate email addresses. This is a strong business rule but can be relaxed if multiple records per email are needed (change at Gate 3).
-- Repository pattern (port interface) allows swapping databases later. If PostgreSQL doesn't meet requirements, adapter can be replaced with MongoDB adapter without changing use cases.
-- ORM or query builder (TypeORM, Sequelize, Prisma) should be selected per development team preference. All three work well with PostgreSQL.
-- Connection pooling essential for production; configure pool size based on concurrency expectations.
+- Data loss on restart is explicitly accepted. When durability becomes a requirement, swap the in-memory adapter for a SQLite or PostgreSQL adapter — no changes needed in use cases or domain.
+- Email value uniqueness is enforced in the adapter (guard before insert); ensures no duplicate addresses.
+- The in-memory store requires no ORM, schema, or migration tooling.
 
 ## Architecture Best Practices Compliance
 
-- **Separation of concerns**: ✓ Repository abstracted via port; use cases don't know database technology
-- **Coupling/cohesion**: ✓ Low coupling (IEmailRepository interface); high cohesion (repository focused on persistence)
-- **Clear module boundaries and contracts**: ✓ Port interface defines operations; schema mirrors entity structure
-- **Testability and observability**: ✓ Mock repository for unit tests; query logging for performance debugging
-- **Security-by-design**: ✓ ACID compliance; encrypted connections; audit trail; backup strategy
-- **Maintainability and evolvability**: ✓ Schema versioning; migrations; ability to swap database technology via adapter
+- **Separation of concerns**: ✓ Repository abstracted via port; use cases are unaware of in-memory implementation
+- **Coupling/cohesion**: ✓ Low coupling (IEmailRepository interface); adapter is self-contained
+- **Clear module boundaries and contracts**: ✓ Port interface defines all operations; adapter implements them fully
+- **Testability and observability**: ✓ Fresh store per test; no test database setup required
+- **Security-by-design**: ✓ Data scoped to process; audit trail still captured via IAuditLogger
+- **Maintainability and evolvability**: ✓ Adapter is the single point of change when upgrading to a database; zero impact on other layers
