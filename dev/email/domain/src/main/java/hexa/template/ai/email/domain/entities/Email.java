@@ -5,7 +5,6 @@ import hexa.template.ai.email.domain.exceptions.InvalidEmailValueException;
 
 import java.time.Instant;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.regex.Pattern;
 
 /**
@@ -34,7 +33,7 @@ public record Email(
 
     /** Compact constructor — validates every construction path. */
     public Email {
-        Objects.requireNonNull(id,      "id cannot be null");
+        // id can be null (will be assigned by persistence layer)
         Objects.requireNonNull(created, "created cannot be null");
         Objects.requireNonNull(updated, "updated cannot be null");
         validateEmailValue(value);
@@ -48,17 +47,17 @@ public record Email(
 
     /**
      * Create a brand-new email entity.
-     * Generates a UUID id and sets both created/updated timestamps to now.
+     * Sets both created/updated timestamps to now. Id will be assigned by the persistence layer.
      * createdBy and updatedBy are initialised to the same actor (no update history yet).
      *
      * @param value     email address (validated)
      * @param createdBy authenticated user id (non-blank)
-     * @return a valid, fully-initialised Email
+     * @return a valid Email (id will be null until persisted)
      */
     public static Email create(String value, String createdBy) {
         Instant now = Instant.now();
         return new Email(
-                UUID.randomUUID().toString(),
+                null,  // id assigned by persistence layer
                 value,
                 now,
                 now,

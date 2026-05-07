@@ -6,6 +6,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
+
 import static org.assertj.core.api.Assertions.*;
 
 /**
@@ -27,13 +29,13 @@ class EmailTest {
     class Creation {
 
         @Test
-        @DisplayName("create() returns a valid record with all fields set correctly")
+        @DisplayName("create() returns a valid record with all fields set (id is null)")
         void shouldCreateValidEmailRecord() {
             Email email = Email.create(VALID_EMAIL, VALID_USER_ID);
 
             assertThat(email.id())
-                    .as("id should be generated")
-                    .isNotBlank();
+                    .as("id should be null (assigned by persistence layer)")
+                    .isNull();
             assertThat(email.value())
                     .as("value should match input")
                     .isEqualTo(VALID_EMAIL);
@@ -55,14 +57,17 @@ class EmailTest {
         }
 
         @Test
-        @DisplayName("create() generates a different UUID for each record")
-        void shouldGenerateUniqueIds() {
+        @DisplayName("create() consistently returns null id for all records")
+        void shouldHaveNullIdBeforePersistence() {
             Email r1 = Email.create("a@example.com", VALID_USER_ID);
             Email r2 = Email.create("b@example.com", VALID_USER_ID);
 
             assertThat(r1.id())
-                    .as("each record should have a unique id")
-                    .isNotEqualTo(r2.id());
+                    .as("id should be null (persistence layer responsibility)")
+                    .isNull();
+            assertThat(r2.id())
+                    .as("id should be null (persistence layer responsibility)")
+                    .isNull();
         }
     }
 
@@ -281,12 +286,17 @@ class EmailTest {
         @Test
         @DisplayName("equality is based on id only")
         void shouldUseIdForEquality() {
-            Email r1 = Email.create("a@example.com", VALID_USER_ID);
-            Email r2 = Email.create("b@example.com", VALID_USER_ID);
+            Instant now = Instant.now();
+            Email r1 = new Email("id-1", "a@example.com", now, now, VALID_USER_ID, VALID_USER_ID);
+            Email r2 = new Email("id-2", "a@example.com", now, now, VALID_USER_ID, VALID_USER_ID);
+            Email r1_again = new Email("id-1", "different@example.com", now, now, "other-user", "other-user");
 
             assertThat(r1)
                     .as("records with different ids must not be equal")
                     .isNotEqualTo(r2);
+            assertThat(r1)
+                    .as("records with same id but different values should be equal (equality based on id only)")
+                    .isEqualTo(r1_again);
         }
 
         @Test
