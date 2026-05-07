@@ -3,8 +3,8 @@
 ## Metadata
 - Updated: 2026-05-07
 - Author Agent: Software Architect
-- Related User Stories: US-0001, US-0002, US-0003, US-0004
-- Related Technical Requirements: TREQ-0001, TREQ-0002, TREQ-0003, TREQ-0004, TREQ-0005, TREQ-0006
+- Related User Stories: US-0001, US-0002, US-0003, US-0004, US-0005
+- Related Technical Requirements: TREQ-0001, TREQ-0002, TREQ-0003, TREQ-0004, TREQ-0005, TREQ-0006, TREQ-0007, TREQ-0009, TREQ-0010, TREQ-0011, TREQ-0012 (TREQ-0008 Deprecated)
 
 ## Architectural Style and Principles
 - **Style**: Hexagonal Architecture (Ports and Adapters)
@@ -79,19 +79,19 @@ flowchart LR
 3. **CreateEmailRecord Use Case** receives user, email value
 4. **Authentication Port** resolves current user identity (authenticated)
 5. **Email Domain** validates email value, creates entity with generated id
-6. **Audit Attribution** sets createdBy = current user id
+6. **Audit Attribution** sets createdBy = current user id, created timestamp
 7. **Repository Port** saves entity to database
-8. **REST API Adapter** serializes entity response: `{ id, value, created, createdBy, updated, updatedBy }`
-9. User receives HTTP 201 with created record
+8. **REST API Adapter** serializes response body: `{ id, value }` (internal metadata in Last-Modified header: RFC 7231 timestamp)
+9. User receives HTTP 201 with created record + Last-Modified header
 
 ### Flow 2: Read Email Record
 1. User sends HTTP GET to `/emails/{id}`
 2. **REST API Adapter** extracts id, user context
 3. **ReadEmailRecord Use Case** receives user, email id
-4. **Authentication Port** resolves current user (authenticated)
-5. **Repository Port** queries database for email record by id
-6. **REST API Adapter** serializes entity response
-7. User receives HTTP 200 with email record
+4. **Authentication Port** verifies user identity
+5. **Repository Port** retrieves record by id
+6. **REST API Adapter** serializes response body: `{ id, value }` (Last-Modified header: RFC 7231 timestamp)
+7. User receives HTTP 200 with record + Last-Modified header
 
 ### Flow 3: List Email Records
 1. User sends HTTP GET to `/emails`
@@ -99,20 +99,21 @@ flowchart LR
 3. **ListEmailRecords Use Case** receives user
 4. **Authentication Port** resolves current user (authenticated)
 5. **Repository Port** queries database for all email records
-6. **REST API Adapter** serializes each entity in response array
-7. User receives HTTP 200 with list of email records
+6. **REST API Adapter** serializes each entity: `{ id, value, lastModified }` (matches record's updated timestamp)
+7. User receives HTTP 200 with list of email records (each with id, value, lastModified)
 
 ### Flow 4: Update Email Record
-1. User sends HTTP PUT to `/emails/{id}` with `{ value: "new@example.com" }`
-2. **REST API Adapter** deserializes, extracts id, user context
+1. User sends HTTP PUT to `/emails/{id}` with `{ value: "new@example.com" }` + If-Unmodified-Since header
+2. **REST API Adapter** deserializes, extracts id, user context, If-Unmodified-Since timestamp
 3. **UpdateEmailRecord Use Case** receives user, email id, new value
 4. **Authentication Port** resolves current user (authenticated)
-5. **Repository Port** retrieves existing entity by id
-6. **Email Domain** validates new email value, updates entity
-7. **Audit Attribution** sets updatedBy = current user id, updates updated timestamp
-8. **Repository Port** saves updated entity
-9. **REST API Adapter** serializes response
-10. User receives HTTP 200 with updated record
+5. **Concurrency Check** verifies If-Unmodified-Since ≤ current record's updated timestamp (TREQ-0011)
+6. **Repository Port** retrieves existing entity by id
+7. **Email Domain** validates new email value, updates entity
+8. **Audit Attribution** sets updatedBy = current user id, updates updated timestamp
+9. **Repository Port** saves updated entity
+10. **REST API Adapter** serializes response body: `{ id, value }` (Last-Modified header: RFC 7231 timestamp)
+11. User receives HTTP 200 with updated record + Last-Modified header (or HTTP 409 if concurrency conflict)
 
 ### Flow 5: Hard-Delete Email Record
 1. User sends HTTP DELETE to `/emails/{id}`
@@ -122,16 +123,19 @@ flowchart LR
 5. **Repository Port** permanently removes record from database
 6. User receives HTTP 204 No Content
 
-## Technology Baseline (To Be Decided at Gate 3)
+## Technology Baseline (Gate 3 Approved)
 
-| Concern | Baseline | Status | TREQ Link |
+| Concern | Decision | Status | TREQ Link |
 |---------|----------|--------|-----------|
-| **Language & Runtime** | Node.js / TypeScript | Proposed | TREQ-0001 |
-| **Web Framework** | Express.js | Proposed | TREQ-0001 |
-| **Authentication** | API Key (simple, POC phase) | Approved ✓ | TREQ-0002 |
-| **Database** | TBD (PostgreSQL / MongoDB / SQLite) | Proposed | TREQ-0006 |
-| **ORM / Query Builder** | TBD (Sequelize / TypeORM / Prisma) | Proposed | TREQ-0006 |
-| **Logging & Observability** | TBD (Winston / Pino / Bunyan) | Proposed | TREQ-0005 |
+| **Language** | Java (JVM) | Approved ✓ | TREQ-0007 |
+| **Web Framework** | Spring Boot | Approved ✓ | TREQ-0007 |
+| **Authentication** | API Key (POC phase) | Approved ✓ | TREQ-0002 |
+| **Data Persistence** | In-Memory Singleton Store (`Map<id, EmailRecord>`) | Approved ✓ | TREQ-0006 |
+| **ORM / Query Builder** | None — no ORM needed for in-memory store | Deprecated (TREQ-0008) | TREQ-0008 |
+| **Logging & Observability** | SLF4J + Logback | Approved ✓ | TREQ-0009 |
+| **HTTP Error Response** | Unified error schema (type, title, status, detail, instance) | Approved ✓ | TREQ-0010 |
+| **Concurrency Control** | If-Unmodified-Since header (optimistic locking on update) | Approved ✓ | TREQ-0011 |
+| **Date/Time Standard** | UTC everywhere — ISO 8601 in JSON body, RFC 7231 in headers | Approved ✓ | TREQ-0012 |
 
 ## Cross-Cutting Concerns Alignment
 
@@ -160,23 +164,23 @@ flowchart LR
 
 | Decision | Rationale | Status |
 |----------|-----------|--------|
-| Hexagonal architecture | Keeps domain logic independent from infrastructure, improves testability and maintainability | Gate 3: Approved ✓ (TREQ-0001, 2026-05-07) |
-| API Key authentication (POC phase) | Simple, no external dependencies; suitable for proof of concept | Gate 3: Approved ✓ (TREQ-0002, 2026-05-07) |
-| Separate authentication & audit concerns | Improves modularity; authentication controls access, audit tracks who did what | Gate 3: Proposed |
-| Repository pattern for persistence | Abstracts database details from domain; enables easy switching of storage technology | Gate 3: Proposed |
-| Hard delete semantics | Business requirement REQ-0001; simplifies compliance and data management | Gate 3: Approved (REQ) |
+| Hexagonal architecture | Keeps domain logic independent from infrastructure, improves testability and maintainability | Approved ✓ (TREQ-0001) |
+| API Key authentication (POC phase) | Simple, no external dependencies; suitable for proof of concept | Approved ✓ (TREQ-0002) |
+| Rich domain entity model | Email entity owns business rules and value constraints in domain layer | Approved ✓ (TREQ-0003) |
+| REST API with standard HTTP semantics | Industry-standard CRUD API; POST/GET/PUT/DELETE mapped to use cases | Approved ✓ (TREQ-0004) |
+| Audit attribution in application layer | Use case handlers capture `createdBy`/`updatedBy` from authenticated user; domain stays clean | Approved ✓ (TREQ-0005) |
+| In-memory singleton store (POC) | Zero-setup, no dependencies; replaceable via repository port when durability is required | Approved ✓ (TREQ-0006) |
+| Java + Spring Boot | Battle-tested, comprehensive ecosystem, strong hexagonal architecture support | Approved ✓ (TREQ-0007) |
+| SLF4J + Logback logging | Standard Java logging façade + well-documented implementation; structured JSON logs | Approved ✓ (TREQ-0009) |
+| Unified HTTP error response schema | Consistent error contract (type, title, status, detail, instance) across all endpoints | Approved ✓ (TREQ-0010) |
+| Optimistic concurrency via If-Unmodified-Since | Prevents lost updates on concurrent edits without pessimistic locking | Approved ✓ (TREQ-0011) |
+| UTC date format standard | All timestamps in UTC; ISO 8601 in JSON, RFC 7231 in HTTP headers | Approved ✓ (TREQ-0012) |
+| Hard delete semantics | Business requirement REQ-0001; simplifies compliance and data management | Approved ✓ (REQ-0001) |
 
-## Open Questions & Decisions Needed
+## Open Questions
 
-Before Gate 3 approval, the following technology selections are needed:
-
-1. **Authentication scheme** (TREQ-0002): JWT (stateless) vs OAuth2 (delegated) vs API Key (simple)?
-2. **Programming language & runtime** (TREQ-0001): Node.js/TypeScript vs Python/FastAPI vs other?
-3. **Web framework** (TREQ-0001): Express.js vs alternatives?
-4. **Database technology** (TREQ-0006): PostgreSQL (relational, ACID) vs MongoDB (document, flexible)?
-5. **ORM/query builder** (TREQ-0006): TypeORM vs Prisma vs Sequelize?
-6. **Logging framework** (TREQ-0005): Winston vs Pino vs Bunyan?
+_None. All Gate 3 decisions are approved. Ready for Developer implementation (Gate 3 → Gate 4)._
 
 ---
 
-*Architecture documentation is maintained by Software Architect. Last reviewed: 2026-05-07*
+*Architecture documentation is maintained by Software Architect. Last reviewed: 2026-05-07 — Gate 3 fully approved.*
