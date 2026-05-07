@@ -2,7 +2,7 @@
 
 ## Metadata
 - ID: TREQ-0003
-- Status: Draft
+- Status: Approved
 - Created: 2026-05-07
 - Updated: 2026-05-07
 - Author Agent: Software Architect
@@ -38,140 +38,31 @@ The system shall define an Email Record domain entity that represents a business
 ## Technical Module Organization
 
 ### Domain Entity: EmailRecord
-**Location**: `domain/entities/email-record.ts`  
-**Responsibility**: Encapsulate email business logic, validate constraints, maintain invariants
+**Location**: `domain/entities/email-record`  
+**Responsibility**: Encapsulate email business logic, enforce validation constraints, maintain invariants
 
-**Entity Structure**:
-```typescript
-class EmailRecord {
-  // Identity
-  readonly id: string                        // Unique identifier (UUID v4 recommended)
-  
-  // Business data
-  value: string                              // Email address (validated format)
-  
-  // Lifecycle
-  readonly created: Date                     // Immutable creation timestamp
-  updated: Date                              // Updated timestamp (changes on every modification)
-  
-  // Audit
-  readonly createdBy: string                 // User id who created this record
-  updatedBy: string                          // User id who last updated this record
-  
-  // Private constructor (factory methods only)
-  private constructor(
-    id: string,
-    value: string,
-    created: Date,
-    updated: Date,
-    createdBy: string,
-    updatedBy: string
-  ) { ... }
-  
-  // Factory method: Create new email record
-  static create(value: string, createdBy: string): EmailRecord {
-    // Validate email value
-    if (!value || !isValidEmail(value)) {
-      throw new InvalidEmailValueError(`Email must be valid: ${value}`)
-    }
-    if (!createdBy) {
-      throw new InvalidAuditError('createdBy must be a non-empty user id')
-    }
-    
-    const now = new Date()
-    return new EmailRecord(
-      generateId(),                   // UUID v4
-      value,
-      now,
-      now,
-      createdBy,
-      createdBy                       // Initially, updatedBy = createdBy
-    )
-  }
-  
-  // Update email value
-  update(newValue: string, updatedBy: string): EmailRecord {
-    if (!newValue || !isValidEmail(newValue)) {
-      throw new InvalidEmailValueError(`Email must be valid: ${newValue}`)
-    }
-    if (!updatedBy) {
-      throw new InvalidAuditError('updatedBy must be a non-empty user id')
-    }
-    
-    // Create new instance with updated value and timestamp
-    return new EmailRecord(
-      this.id,                       // id unchanged
-      newValue,                      // new value
-      this.created,                  // created unchanged
-      new Date(),                    // updated = now
-      this.createdBy,                // createdBy unchanged
-      updatedBy                      // updatedBy = actor
-    )
-  }
-  
-  // Convert to data transfer object (for API response)
-  toDTO(): EmailRecordDTO {
-    return {
-      id: this.id,
-      value: this.value,
-      created: this.created.toISOString(),
-      createdBy: this.createdBy,
-      updated: this.updated.toISOString(),
-      updatedBy: this.updatedBy
-    }
-  }
-}
-```
+**Entity Design Principles**:
+- **Immutability by default**: Identity (id) and creation context (created, createdBy) immutable after creation; value and audit (updated, updatedBy) mutable via explicit update method
+- **Factory methods for controlled construction**: EmailRecord.create() validates preconditions before entity instantiation
+- **Validation colocated with data**: Email format validation, required field checks, audit field validation live in entity methods
+- **Type-safe via strong typing**: All properties typed; compiler catches invalid assignments at build time
+- **Exception-driven error handling**: Validation failures throw specific domain exceptions (InvalidEmailValueError, InvalidAuditError) for clear error semantics
 
-### Domain Validation Functions
-**Location**: `domain/validators/email-validator.ts`  
-**Responsibility**: Validate email format according to business rules
+**Entity Structure & Fields**:
+- **id**: Unique identifier (UUID v4 recommended; generated at creation; immutable)
+- **value**: Email address string (validated format per RFC 5322 basic pattern; required; mutable via update)
+- **created**: Timestamp of entity creation (immutable after creation; required)
+- **updated**: Timestamp of last modification (set at creation; updated on each modification; required)
+- **createdBy**: User id who created record (immutable after creation; required; from authenticated user)
+- **updatedBy**: User id who last modified record (set at creation; updated on each modification; required)
 
-**Implementation**:
-```typescript
-/**
- * Validate email address format
- * Uses basic RFC 5322 pattern (suitable for most business use cases)
- * More complex validation (DNS lookup, SMTP check) can be added as future use case
- */
-function isValidEmail(value: string): boolean {
-  if (typeof value !== 'string') return false
-  if (value.length === 0 || value.length > 254) return false
-  
-  // Basic email regex (RFC 5322 simplified)
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  return emailRegex.test(value)
-}
-```
-
-### Domain Exceptions (Bounded Context)
-**Location**: `domain/exceptions/`  
-**Responsibility**: Represent business rule violations
-
-**Exceptions**:
-- `InvalidEmailValueError`: Email value fails validation (format, length, null)
-- `InvalidAuditError`: Audit field (createdBy, updatedBy) is invalid or missing
-- `EmailRecordNotFoundError`: Requested email record does not exist
-
----
-
-## Data Transfer Object (DTO)
-**Location**: `application/dtos/email-record.dto.ts`  
-**Responsibility**: Contract for API responses and internal use case communication
-
-**DTO Structure**:
-```typescript
-interface EmailRecordDTO {
-  id: string
-  value: string
-  created: string               // ISO 8601 timestamp
-  createdBy: string            // User id (not user name for privacy)
-  updated: string              // ISO 8601 timestamp
-  updatedBy: string            // User id (not user name for privacy)
-}
-```
-
-**Rationale**: DTO separates internal domain representation from external API contract. Timestamps serialized as ISO 8601 strings per REST conventions.
+**Entity Responsibilities**:
+- **Enforce email format validation**: Only accept valid email addresses (reject invalid formats, null, empty)
+- **Enforce audit field requirements**: createdBy and updatedBy must be non-empty user identifiers
+- **Prevent invalid state transitions**: created timestamp never changes; updatedBy reflects current actor
+- **Support creation via factory**: EmailRecord.create(value, createdBy) → validates → instantiates
+- **Support updates via method**: existing.update(newValue, updatedBy) → validates → returns new entity instance (semantic versioning)
+- **Serialize to DTO**: Convert internal representation to API contract (ISO 8601 timestamps, field names)
 
 ---
 
@@ -331,8 +222,8 @@ interface EmailRecordDTO {
 
 ## Validation
 - Requester validation required: No (Option A is recommended baseline)
-- Validation status: Proposed
-- Developer feedback required: Yes (implementability and clarity feedback requested)
+- Validation status: Approved ✓ (2026-05-07)
+- Requester selected option: Option A — Rich Domain Entity (POC phase, approved for implementation)
 
 ## Notes
 - Email value validation uses permissive regex suitable for 99% of cases. Future enhancement: add DNS/SMTP validation if business requires.
