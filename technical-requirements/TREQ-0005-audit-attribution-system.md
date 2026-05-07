@@ -2,11 +2,11 @@
 
 ## Metadata
 - ID: TREQ-0005
-- Status: Draft
+- Status: Approved
 - Created: 2026-05-07
 - Updated: 2026-05-07
 - Author Agent: Software Architect
-- Source User Stories: US-0001, US-0003
+- Source User Stories: US-0001, US-0004
 - Related IDs: REQ-0004, TREQ-0001, TREQ-0003
 - Source Links: [requirements/REQ-0004-email-audit-attribution.md](../requirements/REQ-0004-email-audit-attribution.md)
 - Architecture Links: [docs/architecture/architecture-overview.md](../docs/architecture/architecture-overview.md)
@@ -36,168 +36,71 @@ The system shall capture and persistently record the authenticated user identity
 ## Technical Module Organization
 
 ### Audit Port (Contract)
-**Location**: `ports/audit-logger-port.ts`  
+**Location**: `ports/audit-logger-port.ts`
 **Responsibility**: Abstract audit event logging from business logic
 
-**Interface**:
-```typescript
-interface IAuditLogger {
-  /**
-   * Log an audit event
-   * @param action - Type of action: 'CREATE', 'UPDATE', 'DELETE'
-   * @param actor - User id who performed the action
-   * @param entity - The domain entity (Email Record) affected
-   * @param timestamp - When the action occurred
-   */
-  log(action: string, actor: string, entity: EmailRecord, timestamp: Date): Promise<void>
-}
-
-enum AuditAction {
-  CREATE = 'CREATE',
-  UPDATE = 'UPDATE',
-  DELETE = 'DELETE'
-}
-```
+**Contract**:
+- `log(action, actor, entity, timestamp)` → `void` (async, non-blocking)
+  - `action`: one of `CREATE | UPDATE | DELETE`
+  - `actor`: user id who performed the action
+  - `entity`: the affected Email Record
+  - `timestamp`: when the action occurred (UTC)
 
 **Rationale**: Port interface allows swapping audit destinations (database, file, event stream) without changing use cases or domain.
 
 ---
 
 ### Audit Capture in Use Cases
-**Location**: `application/use-cases/*`  
+**Location**: `application/use-cases/*`
 **Responsibility**: Call audit logger after successful operation
 
-#### Create Use Case Pattern
-```typescript
-async execute(request: CreateEmailRecordRequest) {
-  // 1. Authenticate
-  const user = await this.authProvider.getCurrentUser(request.httpContext)
-  if (!user) throw new UnauthorizedError()
-  
-  // 2. Execute business logic
-  const email = EmailRecord.create(request.value, user.id)  // createdBy = user.id
-  
-  // 3. Persist
-  await this.repository.save(email)
-  
-  // 4. Audit log (non-blocking; doesn't fail operation if logger fails)
-  try {
-    await this.auditLogger.log(AuditAction.CREATE, user.id, email, new Date())
-  } catch (err) {
-    // Log audit failure but don't throw (operation succeeded; audit is secondary)
-    console.error('Audit log failed:', err)
-  }
-  
-  return email.toDTO()
-}
-```
+#### Create Use Case Steps
+1. Authenticate — resolve user via `IAuthProvider`; reject with `UnauthorizedError` if not authenticated
+2. Execute business logic — create `EmailRecord` entity with `createdBy = user.id`
+3. Persist — save entity via `IEmailRepository`
+4. Audit log — call `IAuditLogger.log(CREATE, user.id, email, now)` non-blocking; audit failure must NOT fail the operation
+5. Return created entity as DTO
 
-#### Update Use Case Pattern
-```typescript
-async execute(request: UpdateEmailRecordRequest) {
-  // 1. Authenticate
-  const user = await this.authProvider.getCurrentUser(request.httpContext)
-  if (!user) throw new UnauthorizedError()
-  
-  // 2. Retrieve existing
-  const existing = await this.repository.findById(request.id)
-  if (!existing) throw new NotFoundError()
-  
-  // 3. Execute business logic (update returns new entity with updatedBy = user.id)
-  const updated = existing.update(request.value, user.id)
-  
-  // 4. Persist
-  await this.repository.save(updated)
-  
-  // 5. Audit log (non-blocking)
-  try {
-    await this.auditLogger.log(AuditAction.UPDATE, user.id, updated, new Date())
-  } catch (err) {
-    console.error('Audit log failed:', err)
-  }
-  
-  return updated.toDTO()
-}
-```
+#### Update Use Case Steps
+1. Authenticate — resolve user; reject if not authenticated
+2. Retrieve existing — load entity by id; reject with `NotFoundError` if absent
+3. Execute business logic — apply update to entity with `updatedBy = user.id`
+4. Persist — save updated entity
+5. Audit log — call `IAuditLogger.log(UPDATE, user.id, updated, now)` non-blocking; audit failure must NOT fail the operation
+6. Return updated entity as DTO
 
-#### Delete Use Case Pattern
-```typescript
-async execute(request: DeleteEmailRecordRequest) {
-  // 1. Authenticate
-  const user = await this.authProvider.getCurrentUser(request.httpContext)
-  if (!user) throw new UnauthorizedError()
-  
-  // 2. Retrieve existing (for audit logging)
-  const existing = await this.repository.findById(request.id)
-  if (!existing) throw new NotFoundError()
-  
-  // 3. Execute deletion
-  await this.repository.delete(request.id)
-  
-  // 4. Audit log (non-blocking)
-  try {
-    await this.auditLogger.log(AuditAction.DELETE, user.id, existing, new Date())
-  } catch (err) {
-    console.error('Audit log failed:', err)
-  }
-  
-  return void  // 204 No Content
-}
-```
+#### Delete Use Case Steps
+1. Authenticate — resolve user; reject if not authenticated
+2. Retrieve existing — load entity by id for audit capture; reject with `NotFoundError` if absent
+3. Execute deletion — remove entity via repository
+4. Audit log — call `IAuditLogger.log(DELETE, user.id, existing, now)` non-blocking; audit failure must NOT fail the operation
+5. Return `void` (HTTP 204 No Content)
 
 ---
 
 ### Audit Logger Driven Adapter (Implementation)
 **Location**: `adapters/driven/audit-logger-adapter`  
-**Responsibility**: Implement IAuditLogger; persist audit events
+**Responsibility**: Implement IAuditLogger port; persist audit events to chosen destination
 
-**Components**:
-- **Audit Event Formatter**: Convert domain entity + action to audit event record
-- **Audit Store**: Persist events (database table, log file, event stream)
-- **Error Handling**: Log but don't crash if audit fails
+**Adapter Design**:
+- **Event formatting**: Convert domain entity + action to audit event record (structured, timestamped)
+- **Persistent storage**: Audit events stored via ORM (TREQ-0008), file system, or event stream (per technology selection)
+- **Error isolation**: Adapter catches storage errors; logs them but does not propagate (preserves operation success)
+- **Metadata enrichment**: Add optional context (request id, session id) for correlation
 
-**Audit Event Schema**:
-```typescript
-interface AuditEvent {
-  id: string                          // Unique audit event id (UUID)
-  timestamp: Date                     // When the audit event was logged
-  action: 'CREATE' | 'UPDATE' | 'DELETE'
-  actor: string                       // User id who performed the action
-  entityType: 'EmailRecord'
-  entityId: string                    // Email record id affected
-  entitySnapshot?: object             // Optional: entity state before/after change
-  details?: string                    // Optional: additional context
-}
-```
+**Audit Event Data** (persisted for compliance):
+- **Event id**: Unique audit event identifier
+- **Timestamp**: When the audit event was logged (server time)
+- **Action**: Type of business operation (CREATE, UPDATE, DELETE)
+- **Actor**: User id who performed the action
+- **Entity type**: Domain entity type affected (EmailRecord)
+- **Entity id**: Unique identifier of affected entity
+- **Entity snapshot** (optional): State of entity at time of operation (for forensic investigation)
 
-**Implementation Example (Database Adapter)**:
-```typescript
-class DatabaseAuditLogger implements IAuditLogger {
-  async log(action: string, actor: string, entity: EmailRecord, timestamp: Date): Promise<void> {
-    const event: AuditEvent = {
-      id: generateId(),
-      timestamp,
-      action,
-      actor,
-      entityType: 'EmailRecord',
-      entityId: entity.id,
-      entitySnapshot: {
-        value: entity.value,
-        createdBy: entity.createdBy,
-        updatedBy: entity.updatedBy,
-        updated: entity.updated
-      }
-    }
-    
-    try {
-      await this.auditDB.insert('audit_events', event)
-    } catch (err) {
-      // Log failure but don't throw (audit is secondary)
-      this.logger.error('Failed to log audit event', { event, error: err.message })
-    }
-  }
-}
-```
+**Adapter Integration with Logging Framework**:
+- Audit events logged via structured logging framework (TREQ-0009)
+- Events tagged as audit:true for filtering and analytics
+- JSON structure enables querying via log aggregation services
 
 ---
 
@@ -377,8 +280,9 @@ Operation returns result; audit logged (or logged failure if adapter fails)
 - Explicit audit in use cases aligns with hexagonal architecture and separation of concerns
 
 ## Validation
-- Requester validation required: No (Option A is recommended baseline)
-- Validation status: Proposed
+- Requester validation required: Yes
+- Validation status: Approved
+- Requester selected option: A — Audit in Application Layer
 - Developer feedback required: Yes (implementability feedback requested)
 
 ## Notes
