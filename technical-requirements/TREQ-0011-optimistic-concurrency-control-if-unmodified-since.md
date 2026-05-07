@@ -56,11 +56,7 @@ Last-Modified: Wed, 07 May 2026 14:35:00 GMT
 
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
-  "value": "newemail@example.com",
-  "created": "2026-05-07T14:30:00Z",
-  "createdBy": "user-123",
-  "updated": "2026-05-07T14:35:00Z",
-  "updatedBy": "user-123"
+  "value": "newemail@example.com"
 }
 ```
 
@@ -75,14 +71,6 @@ Last-Modified: Wed, 07 May 2026 14:32:30 GMT
     "code": "CONFLICT",
     "message": "Email record was modified since last read (updated 2026-05-07T14:32:30Z); update rejected",
     "timestamp": "2026-05-07T14:35:00Z"
-  },
-  "current": {
-    "id": "550e8400-e29b-41d4-a716-446655440000",
-    "value": "currentemail@example.com",
-    "created": "2026-05-07T14:30:00Z",
-    "createdBy": "user-123",
-    "updated": "2026-05-07T14:32:30Z",
-    "updatedBy": "user-456"
   }
 }
 ```
