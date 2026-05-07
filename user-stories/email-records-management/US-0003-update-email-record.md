@@ -29,8 +29,9 @@ So that stored contact information stays accurate over time.
 ## Acceptance Criteria
 - [ ] An authenticated user can update an existing email record.
 - [ ] An unauthenticated user cannot update an email record.
-- [ ] The updated record returned to the user includes id, value, created, createdBy, updated, and updatedBy.
-- [ ] The updater identity is recorded in updatedBy.
+- [ ] The updated record returned to the user includes only id and value.
+- [ ] The response includes Last-Modified header with the updated timestamp (RFC 7231 format).
+- [ ] Update requires If-Unmodified-Since header; returns 409 if record was modified since that timestamp.
 
 ## Gherkin Validation Scenarios
 ```gherkin
@@ -38,10 +39,11 @@ Feature: Update email record
 
   Scenario: Authenticated user updates an email record
     Given an authenticated business user has an existing email record
-    When the user updates the email record
+    When the user updates the email record with If-Unmodified-Since header
     Then the record changes are saved
-    And the returned record includes id, value, created, createdBy, updated, and updatedBy
-    And updatedBy identifies the authenticated user
+    And the returned record includes only id and value
+    And the response includes Last-Modified header with the updated timestamp
+    And internal metadata (updatedBy) is captured for audit
 
   Scenario: Unauthenticated user attempts to update an email record
     Given a user is not authenticated

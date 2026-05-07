@@ -30,7 +30,8 @@ So that I can find and review stored contact information reliably.
 - [ ] An authenticated user can read one email record by identifier.
 - [ ] An authenticated user can list existing email records.
 - [ ] An unauthenticated user cannot read or list email records.
-- [ ] Each returned record includes id, value, created, createdBy, updated, and updatedBy.
+- [ ] Each returned record includes only id and value.
+- [ ] Responses include Last-Modified header with the updated timestamp (RFC 7231 format).
 
 ## Gherkin Validation Scenarios
 ```gherkin
@@ -42,7 +43,8 @@ Feature: Read email records
     When the user reads one email record by identifier
     And the user lists email records
     Then the requested record and the listed records are returned
-    And each returned record includes id, value, created, createdBy, updated, and updatedBy
+    And each returned record includes only id and value
+    And responses include Last-Modified header with the updated timestamp
 
   Scenario: Unauthenticated user attempts to read email records
     Given a user is not authenticated
