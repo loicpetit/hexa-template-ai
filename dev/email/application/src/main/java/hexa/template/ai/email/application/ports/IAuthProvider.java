@@ -1,6 +1,7 @@
 package hexa.template.ai.email.application.ports;
 
 import hexa.template.ai.email.application.dto.User;
+import java.util.Optional;
 
 /**
  * Outbound port interface for user authentication and identity resolution.
@@ -23,10 +24,11 @@ public interface IAuthProvider {
      * Extracts authentication credentials (token, session, etc.) from the HTTP request
      * context, validates them, and returns the resolved user identity if valid.
      *
-     * Returns null if the request is unauthenticated or credentials are invalid.
-     * Use cases must check for null and throw UnauthorizedException if needed.
+     * Returns an empty Optional if the request is unauthenticated or credentials are invalid.
+     * Use cases must check presence and throw UnauthorizedException if empty.
      *
-     * @return the authenticated User if valid credentials are present, null if unauthenticated
+     * @return an Optional containing the authenticated User if valid credentials are present,
+     *         or an empty Optional if unauthenticated
      */
-    User getCurrentUser();
+    Optional<User> getCurrentUser();
 }
