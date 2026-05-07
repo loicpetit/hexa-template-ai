@@ -25,6 +25,7 @@ subprojects {
         lombokVersion  = '1.18.34'
         junitVersion   = '5.10.5'
         mockitoVersion = '5.7.0'
+        assertjVersion = '3.26.0'
     }
 
     dependencies {
@@ -33,6 +34,7 @@ subprojects {
         testRuntimeOnly    "org.junit.platform:junit-platform-launcher:1.10.5"
         testImplementation "org.mockito:mockito-core:${mockitoVersion}"
         testImplementation "org.mockito:mockito-junit-jupiter:${mockitoVersion}"
+        testImplementation "org.assertj:assertj-core:${assertjVersion}"
     }
 
     tasks.named('test') {
