@@ -6,7 +6,7 @@
 - Created: 2026-05-07
 - Updated: 2026-05-07
 - Author Agent: Software Architect
-- Source User Stories: US-0001, US-0002, US-0003, US-0004
+- Source User Stories: US-0001, US-0002, US-0003, US-0004, US-0005
 - Related IDs: REQ-0001, REQ-0003, REQ-0004, TREQ-0001
 - Source Links: [requirements/REQ-0001-email-crud-api.md](../requirements/REQ-0001-email-crud-api.md), [requirements/REQ-0003-email-record-response-fields-contract.md](../requirements/REQ-0003-email-record-response-fields-contract.md), [requirements/REQ-0004-email-audit-attribution.md](../requirements/REQ-0004-email-audit-attribution.md)
 - Architecture Links: [docs/architecture/architecture-overview.md](../docs/architecture/architecture-overview.md)

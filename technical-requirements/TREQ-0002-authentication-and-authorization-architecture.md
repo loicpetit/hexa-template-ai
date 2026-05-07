@@ -6,7 +6,7 @@
 - Created: 2026-05-07
 - Updated: 2026-05-07
 - Author Agent: Software Architect
-- Source User Stories: US-0001, US-0002, US-0003, US-0004
+- Source User Stories: US-0001, US-0002, US-0003, US-0004, US-0005
 - Related IDs: REQ-0002, TREQ-0001
 - Source Links: [requirements/REQ-0002-authenticated-email-access-and-audit.md](../requirements/REQ-0002-authenticated-email-access-and-audit.md), [docs/architecture/architecture-overview.md](../docs/architecture/architecture-overview.md)
 - Architecture Links: [docs/architecture/architecture-overview.md](../docs/architecture/architecture-overview.md)

@@ -1,10 +1,10 @@
-# US-0003 - Update Email Record
+# US-0004 - Update Email Record
 
 ## Metadata
-- ID: US-0003
+- ID: US-0004
 - Status: Approved
 - Created: 2026-05-06
-- Updated: 2026-05-06
+- Updated: 2026-05-07
 - Author Agent: Product Owner
 - Functionality: email-records-management
 - Covered Requirements: REQ-0001, REQ-0002, REQ-0003, REQ-0004

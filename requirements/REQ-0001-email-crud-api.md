@@ -4,10 +4,11 @@
 - ID: REQ-0001
 - Status: Approved
 - Created: 2026-05-05
-- Updated: 2026-05-05
+- Updated: 2026-05-07
 - Author Agent: Need Collector
 - Priority: High
-- Related IDs: REQ-0002, REQ-0003
+- Related IDs: REQ-0002, REQ-0003, REQ-0004
+- Covered User Stories: US-0001, US-0002, US-0003, US-0004, US-0005
 - Source: User request on 2026-05-05: "I want to create an API managing emails data" with CRUD and hard delete behavior.
 
 ## Business Context

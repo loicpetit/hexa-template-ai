@@ -4,10 +4,11 @@
 - ID: REQ-0004
 - Status: Approved
 - Created: 2026-05-06
-- Updated: 2026-05-06
+- Updated: 2026-05-07
 - Author Agent: Need Collector
 - Priority: High
 - Related IDs: REQ-0001, REQ-0002, REQ-0003
+- Covered User Stories: US-0001, US-0004
 - Source: Split from REQ-0002 on 2026-05-06. Original source: user request on 2026-05-05 — users must be authenticated to track who creates and updates data.
 
 ## Business Context
