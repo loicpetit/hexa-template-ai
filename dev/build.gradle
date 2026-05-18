@@ -23,13 +23,21 @@ subprojects {
 
     ext {
         springBootVersion = '3.5.0'
-        lombokVersion     = '1.18.34'
+        lombokVersion     = '1.18.42'
+        slf4jVersion      = '2.0.9'
+        logbackVersion    = '1.4.11'
         junitVersion      = '5.10.5'
-        mockitoVersion    = '5.7.0'
+        mockitoVersion    = '5.20.0'
         assertjVersion    = '3.26.0'
     }
 
     dependencies {
+        compileOnly       "org.projectlombok:lombok:${lombokVersion}"
+        annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+        testCompileOnly   "org.projectlombok:lombok:${lombokVersion}"
+        testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+        implementation    "org.slf4j:slf4j-api:${slf4jVersion}"
+        testRuntimeOnly   "ch.qos.logback:logback-classic:${logbackVersion}"
         testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
         testImplementation "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
         testRuntimeOnly    "org.junit.platform:junit-platform-launcher:1.10.5"
