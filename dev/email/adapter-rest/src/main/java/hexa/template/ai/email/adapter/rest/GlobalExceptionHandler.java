@@ -2,6 +2,8 @@ package hexa.template.ai.email.adapter.rest;
 
 import hexa.template.ai.email.application.exceptions.DuplicateKeyException;
 import hexa.template.ai.email.application.exceptions.UnauthorizedException;
+import hexa.template.ai.email.domain.exceptions.InvalidAuditFieldException;
+import hexa.template.ai.email.domain.exceptions.InvalidEmailValueException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -21,6 +23,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DuplicateKeyException.class)
     public ResponseEntity<ErrorResponse> handleDuplicate(DuplicateKeyException ex) {
         return buildError(HttpStatus.CONFLICT, "DUPLICATE_KEY", ex.getMessage());
+    }
+
+    @ExceptionHandler({InvalidEmailValueException.class, InvalidAuditFieldException.class, IllegalArgumentException.class})
+    public ResponseEntity<ErrorResponse> handleInvalidInput(RuntimeException ex) {
+        return buildError(HttpStatus.BAD_REQUEST, "INVALID_INPUT", ex.getMessage());
     }
 
     @ExceptionHandler(Exception.class)

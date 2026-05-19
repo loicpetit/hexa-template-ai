@@ -1,6 +1,6 @@
 package hexa.template.ai.email.adapter.rest;
 
-import hexa.template.ai.email.adapter.rest.dto.EmailRequestDto;
+import hexa.template.ai.email.domain.exceptions.InvalidEmailValueException;
 import hexa.template.ai.email.application.usecases.CreateEmailRecordCommand;
 import hexa.template.ai.email.application.usecases.CreateEmailRecordResponse;
 import hexa.template.ai.email.application.usecases.CreateEmailRecordUseCase;
@@ -22,6 +22,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = EmailController.class)
 class EmailControllerTest {
+    private static final String URL = "/api/emails";
+        public static final String VALID_EMAIL = "user@example.com";
+        public static final String TEST_API_KEY = "test-api-key";
+        public static final String VALID_REQUEST_BODY = """
+                        {
+                            \"value\": \"user@example.com\"
+                        }
+                        """;
+        public static final String BLANK_VALUE_REQUEST_BODY = """
+                        {
+                            \"value\": \"\"
+                        }
+                        """;
+
     @Autowired
     MockMvc mockMvc;
     @MockitoBean
@@ -35,20 +49,15 @@ class EmailControllerTest {
         void success() throws Exception {
             Instant now = Instant.parse("2026-05-19T12:00:00Z");
             Mockito.when(createEmailRecordUseCase.execute(any(CreateEmailRecordCommand.class)))
-                    .thenReturn(new CreateEmailRecordResponse("id-123", "user@example.com", now, now));
+                .thenReturn(new CreateEmailRecordResponse("id-123", VALID_EMAIL, now, now));
 
-            String requestBody = """
-                {
-                  "value": "user@example.com"
-                }
-                """;
-            mockMvc.perform(post("/api/emails")
+            mockMvc.perform(post(URL)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(requestBody))
+                .content(VALID_REQUEST_BODY))
                     .andExpect(status().isCreated())
                     .andExpect(header().string("Last-Modified", "Tue, 19 May 2026 12:00:00 GMT"))
                     .andExpect(jsonPath("$.id").value("id-123"))
-                    .andExpect(jsonPath("$.value").value("user@example.com"));
+                .andExpect(jsonPath("$.value").value(VALID_EMAIL));
         }
         @Test
         @DisplayName("401 Unauthorized if not authenticated")
@@ -56,14 +65,9 @@ class EmailControllerTest {
             Mockito.when(createEmailRecordUseCase.execute(any(CreateEmailRecordCommand.class)))
                     .thenThrow(new hexa.template.ai.email.application.exceptions.UnauthorizedException("Authentication required"));
 
-            String requestBody = """
-                {
-                  "value": "user@example.com"
-                }
-                """;
-            mockMvc.perform(post("/api/emails")
+            mockMvc.perform(post(URL)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(requestBody))
+                .content(VALID_REQUEST_BODY))
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.status").value(401))
                     .andExpect(jsonPath("$.code").value("UNAUTHORIZED"))
@@ -76,18 +80,28 @@ class EmailControllerTest {
             Mockito.when(createEmailRecordUseCase.execute(any(CreateEmailRecordCommand.class)))
                     .thenThrow(new hexa.template.ai.email.application.exceptions.DuplicateKeyException("duplicate"));
 
-            String requestBody = """
-                {
-                  "value": "user@example.com"
-                }
-                """;
-            mockMvc.perform(post("/api/emails")
+            mockMvc.perform(post(URL)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(requestBody))
+                .content(VALID_REQUEST_BODY))
                     .andExpect(status().isConflict())
                     .andExpect(jsonPath("$.status").value(409))
                     .andExpect(jsonPath("$.code").value("DUPLICATE_KEY"))
                     .andExpect(jsonPath("$.message").value("duplicate"));
+        }
+
+        @Test
+        @DisplayName("400 Bad Request on invalid input")
+        void invalidInput() throws Exception {
+            Mockito.when(createEmailRecordUseCase.execute(any(CreateEmailRecordCommand.class)))
+                .thenThrow(new InvalidEmailValueException("Email value cannot be null or blank"));
+
+            mockMvc.perform(post(URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(BLANK_VALUE_REQUEST_BODY))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.code").value("INVALID_INPUT"))
+                .andExpect(jsonPath("$.message").value("Email value cannot be null or blank"));
         }
     }
 }
