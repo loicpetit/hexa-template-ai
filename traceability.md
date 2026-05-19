@@ -4,6 +4,11 @@
 > Status: Gate 3 Completed — Gate 4 In Progress. Implementation and automated integration tests have started for US-0001. Formal Tester-owned E2E artifacts and feature guides are still pending for feature closure.
 
 ## Recent Changes
+- **2026-05-19 — Product Owner Added Feature Guide for US-0001**
+  - **Change**: Added feature guide `docs/features/email-records-management/FEATURE-GUIDE.md` for create email record workflow.
+  - **Traceability Impact**: US-0001 now has both E2E test evidence and a feature guide link.
+  - **Gate Status**: Gate 4 remains In Progress (remaining US guides and E2E artifacts are still pending).
+
 - **2026-05-19 — Tester Executed E2E-0001 for US-0001**
   - **Change**: Created and executed formal test artifact `e2e/email-records-management/E2E-0001-create-email-record.md` for US-0001.
   - **Execution Result**: Pass (automated integration execution via Gradle).
@@ -39,10 +44,10 @@
 
 | REQ ID | Title | Status | US ID(s) | Feature Guide | TREQ ID(s) | E2E ID(s) |
 |--------|-------|--------|----------|----------------|------------|-----------|
-| REQ-0001 | Email Records CRUD Lifecycle | Approved | US-0001, US-0002, US-0003, US-0004, US-0005 | — | TREQ-0004, TREQ-0006 | E2E-0001 (US-0001 scope) |
-| REQ-0002 | Authenticated Email Access | Approved | US-0001, US-0002, US-0003, US-0004, US-0005 | — | TREQ-0002 | E2E-0001 (US-0001 scope) |
-| REQ-0003 | Email Record Response Fields Contract | Approved | US-0001, US-0002, US-0003, US-0004 | — | TREQ-0003, TREQ-0004 | E2E-0001 (US-0001 scope) |
-| REQ-0004 | Email Record Audit Attribution | Approved | US-0001, US-0004 | — | TREQ-0005 | E2E-0001 (US-0001 scope) |
+| REQ-0001 | Email Records CRUD Lifecycle | Approved | US-0001, US-0002, US-0003, US-0004, US-0005 | FEATURE-GUIDE (US-0001 scope) | TREQ-0004, TREQ-0006 | E2E-0001 (US-0001 scope) |
+| REQ-0002 | Authenticated Email Access | Approved | US-0001, US-0002, US-0003, US-0004, US-0005 | FEATURE-GUIDE (US-0001 scope) | TREQ-0002 | E2E-0001 (US-0001 scope) |
+| REQ-0003 | Email Record Response Fields Contract | Approved | US-0001, US-0002, US-0003, US-0004 | FEATURE-GUIDE (US-0001 scope) | TREQ-0003, TREQ-0004 | E2E-0001 (US-0001 scope) |
+| REQ-0004 | Email Record Audit Attribution | Approved | US-0001, US-0004 | FEATURE-GUIDE (US-0001 scope) | TREQ-0005 | E2E-0001 (US-0001 scope) |
 
 ## Gate Status
 
@@ -76,7 +81,7 @@
 - US-0005 - Hard-Delete Email Record
 
 ### Feature Guides (`docs/features/`)
-_None yet._
+- FEATURE-GUIDE - Email Records Management (US-0001 scope)
 
 ### Technical Requirements (`technical-requirements/`)
 
