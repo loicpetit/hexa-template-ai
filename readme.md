@@ -13,20 +13,22 @@ Deliver robust web application features with full traceability from business nee
   - REQ-0004: Email Record Audit Attribution
 
 ### Gate 2 ✅ Completed
-- **4 Approved User Stories**:
+- **5 Approved User Stories**:
   - US-0001: Create Email Record
-  - US-0002: Read Email Records
-  - US-0003: Update Email Record
-  - US-0004: Hard-Delete Email Record
+  - US-0002: Read Single Email Record
+  - US-0003: List Email Records
+  - US-0004: Update Email Record
+  - US-0005: Hard-Delete Email Record
 - All REQs are now covered by user stories
 - All US have Gherkin validation scenarios
 
-### Gate 3 ⬜ Not Started
-- Technical Requirements (TREQ-XXXX) to be created by Software Architect
-- Architecture documentation to be aligned with approved TREQs
+### Gate 3 ✅ Completed
+- Technical Requirements approved (TREQ-0001 to TREQ-0012, with TREQ-0008 deprecated)
+- Architecture choices finalized (Java + Spring Boot, API key auth, in-memory storage, unified error schema)
 
-### Gate 4 ⬜ Not Started
-- E2E test cases to be created and executed by Tester
+### Gate 4 🔄 In Progress
+- Developer implementation is in progress (US-0001 create flow implemented with automated integration coverage)
+- Tester-owned E2E artifacts in `e2e/` are still required for gate closure
 - Feature guides to be created by Product Owner after implementation and testing
 
 ## Key Workflow Features

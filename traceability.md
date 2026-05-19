@@ -1,9 +1,15 @@
 # Traceability Matrix
 
-> Last updated: 2026-05-07  
-> Status: Gate 3 Completed — 4 Approved requirements, 5 Approved user stories (US-0001–US-0005), 11 Approved technical requirements (TREQ-0001–TREQ-0007, TREQ-0009, TREQ-0010, TREQ-0011, TREQ-0012), 1 Deprecated (TREQ-0008). Ready for Gate 4 (implementation + E2E tests).
+> Last updated: 2026-05-19  
+> Status: Gate 3 Completed — Gate 4 In Progress. Implementation and automated integration tests have started for US-0001. Formal Tester-owned E2E artifacts and feature guides are still pending for feature closure.
 
 ## Recent Changes
+- **2026-05-19 — Increment 8 Implemented (US-0001 POST /api/emails E2E Integration Test)**
+  - **Change**: Implemented `@SpringBootTest` integration coverage for create email flow with real wiring (controller + use case + in-memory repository + API key authentication + audit logger).
+  - **Scenarios covered in code**: valid API key (201), missing API key (401), blank value (400).
+  - **Traceability Impact**: US-0001 now has implementation-level integration evidence in code. Formal Tester-owned E2E artifact file in `e2e/` is still pending.
+  - **Gate Status**: Gate 4 moved to In Progress.
+
 - **2026-05-07 — Gate 3 Completed: All Technical Requirements Approved**
   - **Change**: All 11 TREQs finalized and approved. Final technology selections: Java + Spring Boot (TREQ-0007), In-Memory Singleton Store (TREQ-0006), API Key auth (TREQ-0002), SLF4J + Logback (TREQ-0009), unified HTTP error schema (TREQ-0010), If-Unmodified-Since concurrency control (TREQ-0011), UTC date format standard (TREQ-0012). TREQ-0008 (ORM) deprecated — in-memory store requires no ORM.
   - **Traceability Impact**: Architecture overview updated to reflect all approved decisions; all US→TREQ links confirmed complete.
@@ -39,7 +45,7 @@
 | Gate 1 | All REQs Approved before US creation | ✅ Completed |
 | Gate 2 | All US Approved before TREQ creation | ✅ Completed |
 | Gate 3 | All TREQ (technical choices) Approved before implementation | ✅ Completed — 11 Approved (TREQ-0001–TREQ-0007, TREQ-0009, TREQ-0010, TREQ-0011, TREQ-0012), 1 Deprecated (TREQ-0008 — no ORM needed; in-memory store) |
-| Gate 4 | All E2E tests Pass and feature guides documented before feature closure | ⬜ Not started |
+| Gate 4 | All E2E tests Pass and feature guides documented before feature closure | 🔄 In progress — implementation and integration tests started; formal Tester E2E artifacts and feature guides pending |
 
 ## Coverage Rules
 - Every **Approved** REQ must be linked to at least one US (Gate 2).
