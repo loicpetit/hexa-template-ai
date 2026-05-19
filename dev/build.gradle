@@ -8,6 +8,7 @@ version = '0.0.1-SNAPSHOT'
 
 subprojects {
     apply plugin: 'java'
+    apply plugin: 'io.spring.dependency-management'
 
     java {
         toolchain {
@@ -24,11 +25,12 @@ subprojects {
     ext {
         springBootVersion = '3.5.0'
         lombokVersion     = '1.18.42'
-        slf4jVersion      = '2.0.9'
-        logbackVersion    = '1.4.11'
-        junitVersion      = '5.10.5'
-        mockitoVersion    = '5.20.0'
-        assertjVersion    = '3.26.0'
+    }
+
+    dependencyManagement {
+        imports {
+            mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootVersion}"
+        }
     }
 
     dependencies {
@@ -36,14 +38,14 @@ subprojects {
         annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
         testCompileOnly   "org.projectlombok:lombok:${lombokVersion}"
         testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
-        implementation    "org.slf4j:slf4j-api:${slf4jVersion}"
-        implementation    "ch.qos.logback:logback-classic:${logbackVersion}"
-        testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
-        testImplementation "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
-        testRuntimeOnly    "org.junit.platform:junit-platform-launcher:1.10.5"
-        testImplementation "org.mockito:mockito-core:${mockitoVersion}"
-        testImplementation "org.mockito:mockito-junit-jupiter:${mockitoVersion}"
-        testImplementation "org.assertj:assertj-core:${assertjVersion}"
+        implementation    "org.slf4j:slf4j-api"
+        implementation    "ch.qos.logback:logback-classic"
+        testImplementation "org.junit.jupiter:junit-jupiter-api"
+        testImplementation "org.junit.jupiter:junit-jupiter-engine"
+        testRuntimeOnly    "org.junit.platform:junit-platform-launcher"
+        testImplementation "org.mockito:mockito-core"
+        testImplementation "org.mockito:mockito-junit-jupiter"
+        testImplementation "org.assertj:assertj-core"
     }
 
     tasks.named('test') {
