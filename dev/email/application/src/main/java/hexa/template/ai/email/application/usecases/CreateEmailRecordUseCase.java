@@ -43,6 +43,6 @@ public class CreateEmailRecordUseCase {
             log.warn("Audit logging failed for CREATE on email id {}", savedEmail.id(), exception);
         }
 
-        return new CreateEmailRecordResponse(savedEmail.id(), savedEmail.value(), savedEmail.created());
+        return new CreateEmailRecordResponse(savedEmail.id(), savedEmail.value(), savedEmail.created(), savedEmail.updated());
     }
 }
