@@ -1,0 +1,8 @@
+### Create email record (US-0001)
+POST http://localhost:8080/api/emails
+Authorization: ApiKey test-api-key
+Content-Type: application/json
+
+{
+  "value": "user@example.com"
+}
