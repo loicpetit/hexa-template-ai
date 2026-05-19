@@ -4,6 +4,12 @@
 > Status: Gate 3 Completed — Gate 4 In Progress. Implementation and automated integration tests have started for US-0001. Formal Tester-owned E2E artifacts and feature guides are still pending for feature closure.
 
 ## Recent Changes
+- **2026-05-19 — Tester Executed E2E-0001 for US-0001**
+  - **Change**: Created and executed formal test artifact `e2e/email-records-management/E2E-0001-create-email-record.md` for US-0001.
+  - **Execution Result**: Pass (automated integration execution via Gradle).
+  - **Traceability Impact**: US-0001 now has an explicit Gate 4 E2E artifact link.
+  - **Gate Status**: Gate 4 remains In Progress (US-0002 to US-0005 E2E and feature guides still pending).
+
 - **2026-05-19 — Increment 8 Implemented (US-0001 POST /api/emails E2E Integration Test)**
   - **Change**: Implemented `@SpringBootTest` integration coverage for create email flow with real wiring (controller + use case + in-memory repository + API key authentication + audit logger).
   - **Scenarios covered in code**: valid API key (201), missing API key (401), blank value (400).
@@ -33,10 +39,10 @@
 
 | REQ ID | Title | Status | US ID(s) | Feature Guide | TREQ ID(s) | E2E ID(s) |
 |--------|-------|--------|----------|----------------|------------|-----------|
-| REQ-0001 | Email Records CRUD Lifecycle | Approved | US-0001, US-0002, US-0003, US-0004, US-0005 | — | TREQ-0004, TREQ-0006 | — |
-| REQ-0002 | Authenticated Email Access | Approved | US-0001, US-0002, US-0003, US-0004, US-0005 | — | TREQ-0002 | — |
-| REQ-0003 | Email Record Response Fields Contract | Approved | US-0001, US-0002, US-0003, US-0004 | — | TREQ-0003, TREQ-0004 | — |
-| REQ-0004 | Email Record Audit Attribution | Approved | US-0001, US-0004 | — | TREQ-0005 | — |
+| REQ-0001 | Email Records CRUD Lifecycle | Approved | US-0001, US-0002, US-0003, US-0004, US-0005 | — | TREQ-0004, TREQ-0006 | E2E-0001 (US-0001 scope) |
+| REQ-0002 | Authenticated Email Access | Approved | US-0001, US-0002, US-0003, US-0004, US-0005 | — | TREQ-0002 | E2E-0001 (US-0001 scope) |
+| REQ-0003 | Email Record Response Fields Contract | Approved | US-0001, US-0002, US-0003, US-0004 | — | TREQ-0003, TREQ-0004 | E2E-0001 (US-0001 scope) |
+| REQ-0004 | Email Record Audit Attribution | Approved | US-0001, US-0004 | — | TREQ-0005 | E2E-0001 (US-0001 scope) |
 
 ## Gate Status
 
@@ -91,4 +97,4 @@ _None yet._
 - TREQ-0012 - UTC Date Format Standard (Approved ✓) — All timestamps in UTC (ISO 8601 JSON, RFC 7231 headers)
 
 ### E2E Test Cases (`e2e/`)
-_None yet._
+- E2E-0001 - Create Email Record (US-0001)
